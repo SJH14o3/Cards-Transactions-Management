@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">Transactions</string>
+    <string name="act_app_name">My Cards</string>
+    <string name="add_bank">Add new Card</string>
+    <string name="empty" />
+
+    <string name="placeholder">place holder</string>
+
+    <string name="add_card_button_screen_reader">Add Card</string>
+    <string name="card_number_place_holder">0123 4567 8901 2345</string>
+    <string name="shaba_placeholder">IR123456789012345678901234</string>
+    <string name="expiry_placeholder">01/23</string>
+    <string name="owner_placeholder">first lastname</string>
+
+    <string name="all_cards">Overall Report</string>
+    <string name="settings">Settings</string>
+    <string name="accesses">Accesses</string>
+    <string name="add_card">Add Card</string>
+    <string name="refresh">Refresh</string>
+
+    <string name="edit">Edit</string>
+    <string name="share">Share</string>
+    <string name="delete">Delete</string>
+    <string name="sharing_method">Choose Sharing Method</string>
+    <string name="share_card_number">Card Number</string>
+    <string name="share_shaba_number">Shaba Number</string>
+    <string name="share_image">Share Image</string>
+
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="expiry_date">%1$d/%2$s</string>
+    <string name="image_of_bank_logo">Image of Bank Log</string>
+    <string name="more_options_for_card">more options for card</string>
+    <string name="menu">menu</string>
+</resources>

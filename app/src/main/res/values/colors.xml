@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="lavender">#DCC6FF</color>
+    <color name="text_fill_on_lavender">#45454F</color>
+    <color name="pasargad_text_fill">#F0C239</color>
+    <color name="mehr_text_fill">#35D930</color>
+    <color name="saman_text_fill">#66D6FF</color>
+</resources>
