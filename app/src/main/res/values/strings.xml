@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Transactions</string>
     <string name="act_app_name">My Cards</string>
-    <string name="add_bank">Add new Card</string>
+    <string name="add_bank">Add New Card</string>
     <string name="empty" />
 
     <string name="placeholder">place holder</string>
@@ -30,7 +30,21 @@
     <string name="cancel">Cancel</string>
 
     <string name="expiry_date">%1$d/%2$s</string>
+    <string name="shaba">IR%1$s</string>
     <string name="image_of_bank_logo">Image of Bank Log</string>
     <string name="more_options_for_card">more options for card</string>
     <string name="menu">menu</string>
+    <string name="card_title">Card Title</string>
+    <string name="characters_limit">30 Characters Max</string>
+    <string name="card_number">Card Number</string>
+    <string name="shaba_number">Shaba Number</string>
+    <string name="ir">IR</string>
+    <string name="exactly_24_numbers">Exactly 24 Numbers</string>
+    <string name="expiry">Expiry</string>
+    <string name="month">Month</string>
+    <string name="year">Year</string>
+    <string name="date_separator">/</string>
+    <string name="month_hint">Month (1–12)</string>
+    <string name="year_hint">Year (4 Digits)</string>
+    <string name="owner_name">Owner Name</string>
 </resources>

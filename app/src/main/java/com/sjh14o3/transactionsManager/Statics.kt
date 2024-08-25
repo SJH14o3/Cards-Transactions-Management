@@ -1,6 +1,7 @@
 package com.sjh14o3.transactionsManager
 
 import android.content.Context
+import android.content.Intent
 
 //this class contains some useful variable and will be initiated in the start of application
 class Statics {
@@ -19,6 +20,11 @@ class Statics {
 
         fun getPackageName(): String {
             return packageName
+        }
+
+        fun switchActivity(current: Context, target: Class<*>) {
+            val intent = Intent(current, target)
+            current.startActivity(intent)
         }
     }
 }

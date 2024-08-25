@@ -187,7 +187,6 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
             val res = Statics.getApplicationContext().resources
             val directory = "ic_" + bankName.lowercase()
             val resID = res.getIdentifier(directory, "drawable", Statics.getPackageName())
-            println("directory is $directory")
             try {
                 //loading in bank logo to identify bank
                 holder.logo.setImageDrawable(res.getDrawable(resID))
@@ -210,7 +209,7 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
     private fun drawCard(holder: ViewHolder, card: DebitCard) {
         holder.title.text = card.getTitle()
         holder.cardNumber.text = card.getCardNumber()
-        holder.shaba.text = card.getShaba()
+        holder.shaba.text = activity.getString(R.string.shaba, card.getShaba())
         val year = card.getExpiryYear()
         val month = displayMonth(card.getExpiryMonth())
         holder.expiry.text = activity.getString(R.string.expiry_date, year,month)
@@ -222,12 +221,19 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
         moreMenu.setOnMenuItemClickListener { item ->
             //TODO: Implement Edit and Delete card
             when(item.title) {
-                "Edit" -> Toast.makeText(context, "You clicked Edit", Toast.LENGTH_SHORT).show()
+                "Edit" -> {
+                    editCard(card)
+                }
                 "Share" -> showShareDialog(card, holder)
                 "Delete" -> Toast.makeText(context, "You clicked Delete", Toast.LENGTH_SHORT).show()
             }
             true
         }
         moreMenu.show()
+    }
+    private fun editCard(card: DebitCard) {
+        val intent = Intent(activity, CardAddOrEditActivity::class.java)
+        intent.putExtra("Card", card)
+        activity.startActivity(intent)
     }
 }

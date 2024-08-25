@@ -1,8 +1,10 @@
 package com.sjh14o3.transactionsManager
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -35,6 +37,11 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        onBackPressedDispatcher.addCallback(this, object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                backPressed()
+            }
+        })
         //setting every static variables in start of application
         Statics.setVariables(applicationContext, packageName)
         //setting up drawer
@@ -59,9 +66,8 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
 
         //setting up add card floating button
         addCardButton = findViewById(R.id.addCardFloatingButton)
-        addCardButton.setOnClickListener { _ ->
-            //TODO: implement adding card
-            Toast.makeText(applicationContext, "add button clicked", Toast.LENGTH_SHORT).show()
+        addCardButton.setOnClickListener { _ -> //switching to adding card activity
+            Statics.switchActivity(this, CardAddOrEditActivity::class.java)
         }
     }
 
@@ -72,7 +78,9 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
             R.id.nav_all_cards -> Toast.makeText(applicationContext, "Overall Report", Toast.LENGTH_SHORT).show()
             R.id.nav_settings -> Toast.makeText(applicationContext, "Settings", Toast.LENGTH_SHORT).show()
             R.id.nav_accesses -> Toast.makeText(applicationContext, "Accesses", Toast.LENGTH_SHORT).show()
-            R.id.nav_add_card -> Toast.makeText(applicationContext, "Add Card", Toast.LENGTH_SHORT).show()
+            R.id.nav_add_card -> {
+                Statics.switchActivity(this, CardAddOrEditActivity::class.java)
+            }
             R.id.nav_refresh -> Toast.makeText(applicationContext, "Refresh", Toast.LENGTH_SHORT).show()
         }
         binding.main.closeDrawer(GravityCompat.START)
@@ -80,7 +88,7 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
     }
 
     //when back is pressed, depending on if drawer is open, different action will be taken
-    override fun onBackPressed() {
+    fun backPressed() {
         if (binding.main.isDrawerOpen(GravityCompat.START)) {
             binding.main.closeDrawer(GravityCompat.START)
         }
@@ -98,15 +106,15 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
 
     //before using data base, this will be used for testing the recycler view of cards and image checking
     private fun getSampleCards(): Array<DebitCard> {
-        val card1 = DebitCard("Income Card", "5022 2901 2345 6789", "IR1234567890123456789012", 1, 1407, "Michael Hamilton Smith")
-        val card2 = DebitCard("Safe Spending Card", "6219 8601 2345 6789", "IR1234567890123456789012", 2, 1408, "Michael Hamilton Smith")
-        val card3 = DebitCard("Deposit Card", "6063 7301 2345 6789", "IR1234567890123456789012", 11, 1409, "Michael Hamilton Smith")
-        val card4 = DebitCard("Loan Card", "6395 9901 2345 6789", "IR1234567890123456789012", 7, 1410, "Michael Hamilton Smith")
-        val card6 = DebitCard("Bill card", "6274 1201 2345 6789", "IR1234567890123456789012", 11, 1411, "Michael Hamilton Smith")
-        val card7 = DebitCard("Kid Card", "6273 8101 2345 6789", "IR1234567890123456789012", 12, 1412, "Michael Hamilton Smith")
-        val card8 = DebitCard("my card8", "0000 0601 2345 6789", "IR1234567890123456789012", 4, 1413, "Michael Hamilton Smith")
-        val card9 = DebitCard("my card9", "6362 1401 2345 6789", "IR1234567890123456789012", 9, 1414, "Michael Hamilton Smith")
-        val bad = DebitCard("my card5", "5022 2901 2345 6789", "IR1234567890123456789012", 6, 1415, "Michael Hamilton Smith")
+        val card1 = DebitCard("Income Card", "5022 2901 2345 6789", "123456789012345678901234", 1, 1407, "Michael Hamilton Smith")
+        val card2 = DebitCard("Safe Spending Card", "6219 8601 2345 6789", "123456789012345678901234", 2, 1408, "Michael Hamilton Smith")
+        val card3 = DebitCard("Deposit Card", "6063 7301 2345 6789", "123456789012345678901234", 11, 1409, "Michael Hamilton Smith")
+        val card4 = DebitCard("Loan Card", "6395 9901 2345 6789", "123456789012345678901234", 7, 1410, "Michael Hamilton Smith")
+        val card6 = DebitCard("Bill card", "6274 1201 2345 6789", "123456789012345678901234", 11, 1411, "Michael Hamilton Smith")
+        val card7 = DebitCard("Kid Card", "6273 8101 2345 6789", "123456789012345678901234", 12, 1412, "Michael Hamilton Smith")
+        val card8 = DebitCard("my card8", "0000 0601 2345 6789", "123456789012345678901234", 4, 1413, "Michael Hamilton Smith")
+        val card9 = DebitCard("my card9", "6362 1401 2345 6789", "123456789012345678901234", 9, 1414, "Michael Hamilton Smith")
+        val bad = DebitCard("my card5", "5022 2901 2345 6789", "123456789012345678901234", 6, 1415, "Michael Hamilton Smith")
         return arrayOf(card1, card2, card3, card4, card6, card7, card8, card9, bad)
     }
 }

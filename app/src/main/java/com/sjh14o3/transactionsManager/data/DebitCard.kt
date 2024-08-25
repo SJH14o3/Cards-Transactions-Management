@@ -1,11 +1,16 @@
 package com.sjh14o3.transactionsManager.data
 
 import android.annotation.SuppressLint
+import android.content.res.Resources.NotFoundException
+import android.widget.ImageView
+import com.sjh14o3.transactionsManager.R
+import com.sjh14o3.transactionsManager.Statics
+import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.Date
 
 class DebitCard(private val title: String ,private val cardNumber: String,private val shaba: String,
-                private val expiryMonth: Byte, private val expiryYear: Short, private val ownerName: String) {
+                private val expiryMonth: Byte, private val expiryYear: Short, private val ownerName: String): Serializable {
     private var isExpired = false
 
     init {
@@ -29,6 +34,10 @@ class DebitCard(private val title: String ,private val cardNumber: String,privat
     fun getExpiryMonth(): Byte {
         return expiryMonth
     }
+    fun getExpiryMonthWithFormat(): String {
+        if (expiryMonth < 10) return "0$expiryMonth"
+        return expiryMonth.toString()
+    }
     fun getExpiryYear(): Short {
         return expiryYear
     }
@@ -42,7 +51,7 @@ class DebitCard(private val title: String ,private val cardNumber: String,privat
     companion object {
         fun identifyBank(str: String): String {
             val out: String = when(str.substring(0, 7)) {
-                "6062 56" -> "Askariye"
+                "6062 56" -> "Askariye" //No Icon
                 "6274 12" -> "Eghtesad_Novin"
                 "6273 81" -> "Ansar"
                 "5057 85" -> "Iran_Zamin"
@@ -52,7 +61,6 @@ class DebitCard(private val title: String ,private val cardNumber: String,privat
                 "6278 84" -> "Parsian"
                 "6393 47" -> "Pasargad"
                 "5022 29" -> "Pasargad"
-                "6362 14" -> "Tat"
                 "6273 53" -> "Tejarat"
                 "5029 08" -> "Tose_e_Taavon"
                 "2071 77" -> "Tose_e_Saderat"
@@ -96,6 +104,22 @@ class DebitCard(private val title: String ,private val cardNumber: String,privat
                 "Mehr" -> "#35D930"
                 "Saman" -> "#66D6FF"
                 else -> "#FFFFFF"
+            }
+        }
+
+        @SuppressLint("DiscouragedApi", "UseCompatLoadingForDrawables")
+        fun getBankLogo(cardNumber: String, image: ImageView) {
+            try {
+                //loading in bank logo to identify bank
+                val res = Statics.getApplicationContext().resources
+                val directory = "ic_" + identifyBank(cardNumber).lowercase()
+                println(directory)
+                val resID = res.getIdentifier(directory, "drawable", Statics.getPackageName())
+                image.setImageDrawable(res.getDrawable(resID))
+                //if somehow  the bank logo was not available, a default icon will be used instead
+            } catch (e: Exception) {
+                e.printStackTrace()
+                image.setImageResource(R.drawable.ic_default)
             }
         }
     }
