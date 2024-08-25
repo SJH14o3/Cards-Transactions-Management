@@ -47,4 +47,20 @@
     <string name="month_hint">Month (1–12)</string>
     <string name="year_hint">Year (4 Digits)</string>
     <string name="owner_name">Owner Name</string>
+
+    <string name="error_title">⚠️Enter Title</string>
+    <string name="error_mismatch_number">⚠️Insert Only Digits</string>
+    <string name="error_card_empty">⚠️Enter Card Number</string>
+    <string name="error_card_not_filled">⚠️Fill all cells</string>
+    <string name="error_shaba_empty">⚠️Enter Shaba</string>
+    <string name="error_shaba_not_filled">⚠️Insert 24 Digits</string>
+    <string name="error_month_empty">⚠️Enter Month of Expiry</string>
+    <string name="error_month_invalid_input">⚠️Month Must Be from 1 to 12</string>
+    <string name="error_month_mismatch_number">⚠️Insert only digits for year</string>
+    <string name="error_year_empty">⚠️Enter Year of Expiry</string>
+    <string name="error_year_not_filled">️️⚠️Fill year cell with 4 digits</string>
+    <string name="error_year_mismatch_number">⚠️Insert only digits for year</string>
+    <string name="error_owner_empty">⚠️Enter Owner Name</string>
+
+
 </resources>

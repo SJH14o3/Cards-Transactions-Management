@@ -7,4 +7,6 @@
     <color name="pasargad_text_fill">#F0C239</color>
     <color name="mehr_text_fill">#35D930</color>
     <color name="saman_text_fill">#66D6FF</color>
+    <color name="error">#FF0000</color>
+    <color name="text_fill_default">#49454F</color>
 </resources>

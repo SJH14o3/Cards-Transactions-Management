@@ -94,10 +94,135 @@ class CardAddOrEditActivity : AppCompatActivity() {
         addTextListeners()
     }
     private fun confirm() {
-        //TODO: implement
+        resetTexts()
+        if (!validateInput()) return
+        Toast.makeText(this, "Success", Toast.LENGTH_SHORT).show()
+        //TODO: Implement confirmation part
     }
     private fun cancel() {
         backPressed()
+    }
+    private fun validateInput(): Boolean {
+        val sb = StringBuilder()
+        var out = true
+        var correctYear = true
+        if (inputTitle.text.isEmpty()) {
+            sb.append("Enter Title")
+            textTitle.setText(R.string.error_title)
+            textTitle.setTextColor(resources.getColor(R.color.error))
+            out = false
+        }
+
+        if (inputCardNumber1.text.isEmpty() && inputCardNumber2.text.isEmpty() &&
+            inputCardNumber3.text.isEmpty() && inputCardNumber4.text.isEmpty()) {
+            if (!out) sb.append("\n")
+            sb.append("Enter Card Number")
+            textCardNumber.setText(R.string.error_card_empty)
+            textCardNumber.setTextColor(resources.getColor(R.color.error))
+            out = false
+        } else if (inputCardNumber1.length() != 4 || inputCardNumber2.length() != 4 &&
+            inputCardNumber3.length() != 4 && inputCardNumber4.length() != 4) {
+            if (!out) sb.append("\n")
+            sb.append("Fill all card number cells")
+            textCardNumber.setText(R.string.error_card_not_filled)
+            textCardNumber.setTextColor(resources.getColor(R.color.error))
+            out = false
+        } else if (!validateDigits(inputCardNumber1.text.toString(), 4) ||
+            !validateDigits(inputCardNumber2.text.toString(), 4) ||
+            !validateDigits(inputCardNumber3.text.toString(), 4) ||
+            !validateDigits(inputCardNumber4.text.toString(), 4)) {
+                if (!out) sb.append("\n")
+                sb.append("Enter only digits for card number")
+                textCardNumber.setText(R.string.error_mismatch_number)
+                textCardNumber.setTextColor(resources.getColor(R.color.error))
+                out = false
+        }
+
+        if (inputShabaNumber.text.isEmpty()) {
+            if (!out) sb.append("\n")
+            sb.append("Enter Shaba")
+            textShabaNumber.setText(R.string.error_shaba_empty)
+            textShabaNumber.setTextColor(resources.getColor(R.color.error))
+            out = false
+        } else if(inputShabaNumber.length() != 24) {
+            if (!out) sb.append("\n")
+            sb.append("Insert 24 digits for shaba")
+            textShabaNumber.setText(R.string.error_shaba_not_filled)
+            textShabaNumber.setTextColor(resources.getColor(R.color.error))
+            out = false
+
+        } else if(!validateDigits(inputShabaNumber.text.toString(), 24)) {
+            if (!out) sb.append("\n")
+            sb.append("Enter only digits for Shaba Number")
+            textShabaNumber.setText(R.string.error_mismatch_number)
+            textShabaNumber.setTextColor(resources.getColor(R.color.error))
+            out = false
+        }
+
+        if (inputYear.text.isEmpty()) {
+            if (!out) sb.append("\n")
+            sb.append("Enter Year")
+            textExpiry.setText(R.string.error_year_empty)
+            textExpiry.setTextColor(resources.getColor(R.color.error))
+            correctYear = false
+            out = false
+        } else if (inputYear.length() != 4) {
+            if (!out) sb.append("\n")
+            sb.append("Fill year cell")
+            textExpiry.setText(R.string.error_year_not_filled)
+            textExpiry.setTextColor(resources.getColor(R.color.error))
+            correctYear = false
+            out = false
+        } else if (!validateDigits(inputYear.text.toString(), 4)) {
+            if (!out) sb.append("\n")
+            sb.append("Insert only digits for year")
+            textExpiry.setText(R.string.error_year_mismatch_number)
+            textExpiry.setTextColor(resources.getColor(R.color.error))
+            correctYear = false
+            out = false
+        }
+
+        if (inputMonth.text.isEmpty()) {
+            if (!out) sb.append("\n")
+            sb.append("Enter Month")
+            if (!correctYear) textExpiry.setText("" + textExpiry.text + " and " + resources.getString(R.string.error_month_empty))
+            else textExpiry.setText(R.string.error_month_empty)
+            textExpiry.setTextColor(resources.getColor(R.color.error))
+            out = false
+        } else if (!validateDigits(inputMonth.text.toString(), 2) &&
+            !validateDigits(inputMonth.text.toString(), 1)) {
+            if (!out) sb.append("\n")
+            sb.append("Insert only digits for Month")
+            if (!correctYear) textExpiry.setText("" + textExpiry.text + " and " + resources.getString(R.string.error_month_mismatch_number))
+            else textExpiry.setText(R.string.error_month_mismatch_number)
+            textExpiry.setTextColor(resources.getColor(R.color.error))
+            out = false
+        } else if (!(inputMonth.text.toString().toByte() in 1..12)) {
+            if (!out) sb.append("\n")
+            sb.append("Month of Expiry must be from 1 to 12")
+            if (!correctYear) textExpiry.setText("" + textExpiry.text + " and " + resources.getString(R.string.error_month_invalid_input))
+            else textExpiry.setText(R.string.error_month_invalid_input)
+            textExpiry.setTextColor(resources.getColor(R.color.error))
+            out = false
+        }
+
+        if (inputOwnerName.text.isEmpty()) {
+            if (!out) sb.append("\n")
+            sb.append("Enter Owner Name")
+            textOwnerName.setText(R.string.error_owner_empty)
+            textOwnerName.setTextColor(resources.getColor(R.color.error))
+            out = false
+        }
+
+        if (!out) {
+            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+            builder.setTitle("Input Validation Failed").setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }.setMessage(sb.toString())
+            val dialog: AlertDialog = builder.create()
+            dialog.show()
+        }
+        return out
     }
     private fun addTextListeners() {
         inputCardNumber1.addTextChangedListener(object: TextWatcher {
@@ -229,5 +354,24 @@ class CardAddOrEditActivity : AppCompatActivity() {
         inputYear.setText(card.getExpiryYear().toString())
         inputMonth.setText(card.getExpiryMonthWithFormat())
         inputOwnerName.setText(card.getOwnerName())
+    }
+
+    private fun resetTexts() {
+        textTitle.setText(R.string.card_title)
+        textTitle.setTextColor(resources.getColor(R.color.text_fill_default))
+        textCardNumber.setText(R.string.card_number)
+        textCardNumber.setTextColor(resources.getColor(R.color.text_fill_default))
+        textShabaNumber.setText(R.string.shaba_number)
+        textShabaNumber.setTextColor(resources.getColor(R.color.text_fill_default))
+        textExpiry.setText(R.string.expiry)
+        textExpiry.setTextColor(resources.getColor(R.color.text_fill_default))
+        textOwnerName.setText(R.string.owner_name)
+        textOwnerName.setTextColor(resources.getColor(R.color.text_fill_default))
+    }
+
+    private fun validateDigits(input: String, digits: Int): Boolean {
+        println("\\d{${digits}")
+        val pattern = Regex("\\d{${digits}}")
+        return pattern.matches(input)
     }
 }
