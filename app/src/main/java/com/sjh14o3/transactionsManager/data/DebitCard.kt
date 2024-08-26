@@ -1,7 +1,6 @@
 package com.sjh14o3.transactionsManager.data
 
 import android.annotation.SuppressLint
-import android.content.res.Resources.NotFoundException
 import android.widget.ImageView
 import com.sjh14o3.transactionsManager.R
 import com.sjh14o3.transactionsManager.Statics
@@ -9,9 +8,34 @@ import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.Date
 
-class DebitCard(private val title: String ,private val cardNumber: String,private val shaba: String,
-                private val expiryMonth: Byte, private val expiryYear: Short, private val ownerName: String): Serializable {
+class DebitCard: Serializable {
     private var isExpired = false
+    private var id = -1
+    private val title: String
+    private val cardNumber: String
+    private val shaba: String
+    private val expiryMonth: Byte
+    private val expiryYear: Short
+    private val ownerName: String
+    constructor(title: String ,cardNumber: String,shaba: String, expiryMonth: Byte, expiryYear: Short,
+                ownerName: String) {
+        this.title = title
+        this.cardNumber = cardNumber
+        this.shaba = shaba
+        this.expiryMonth = expiryMonth
+        this.expiryYear = expiryYear
+        this.ownerName = ownerName
+    }
+    constructor(title: String ,cardNumber: String,shaba: String, expiryMonth: Byte, expiryYear: Short,
+                ownerName: String, id: Int) {
+        this.title = title
+        this.cardNumber = cardNumber
+        this.shaba = shaba
+        this.expiryMonth = expiryMonth
+        this.expiryYear = expiryYear
+        this.ownerName = ownerName
+        this.id = id
+    }
 
     init {
         checkExpired()
@@ -21,12 +45,20 @@ class DebitCard(private val title: String ,private val cardNumber: String,privat
         return isExpired
     }
 
+    fun getId(): Int {
+        return id
+    }
+
     fun getTitle(): String {
         return title
     }
-
+    //this function will return card number in the original format with spaces
     fun getCardNumber(): String {
         return cardNumber
+    }
+    //this function will return card number but with only digits
+    fun getCardNumberPlain(): String {
+        return cardNumber.replace(" ", "")
     }
     fun getShaba(): String {
         return shaba
@@ -34,6 +66,7 @@ class DebitCard(private val title: String ,private val cardNumber: String,privat
     fun getExpiryMonth(): Byte {
         return expiryMonth
     }
+    //this function will return month with 2 digits format even if month is 1 digit
     fun getExpiryMonthWithFormat(): String {
         if (expiryMonth < 10) return "0$expiryMonth"
         return expiryMonth.toString()
@@ -46,6 +79,13 @@ class DebitCard(private val title: String ,private val cardNumber: String,privat
     }
     fun getBankName(): String {
         return identifyBank(cardNumber)
+    }
+    //this function is used when user edited the card without any change
+    override fun equals(other: Any?): Boolean {
+        if (other !is DebitCard) return false
+        return (title == other.getTitle() && cardNumber == other.getCardNumber() && shaba == other.getShaba() &&
+                expiryMonth == other.getExpiryMonth() && expiryYear == other.getExpiryYear() &&
+                ownerName == other.getOwnerName())
     }
 
     companion object {

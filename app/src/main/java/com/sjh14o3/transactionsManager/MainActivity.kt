@@ -1,12 +1,12 @@
 package com.sjh14o3.transactionsManager
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -28,6 +28,9 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
     private lateinit var fragmentManager: FragmentManager
     private lateinit var binding: ActivityMainBinding
     private lateinit var addCardButton: FloatingActionButton
+    private lateinit var adaptor: MainAdaptor
+    private lateinit var coordinatorLayout: CoordinatorLayout
+    private lateinit var cards: Array<DebitCard>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +46,9 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
             }
         })
         //setting every static variables in start of application
-        Statics.setVariables(applicationContext, packageName)
+        parent= findViewById(R.id.main)
+        coordinatorLayout = findViewById(R.id.coordinate_layout)
+        Statics.setVariables(applicationContext, packageName, this)
         //setting up drawer
         binding = ActivityMainBinding.inflate(layoutInflater)
         setSupportActionBar(binding.toolbar)
@@ -57,17 +62,16 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
 
         //setting up recycler view
         setContentView(binding.root)
-        parent= findViewById(R.id.main)
         recyclerview = findViewById(R.id.mainRecyclerView)
-        val cards = getSampleCards()
-        val adaptor = MainAdaptor(cards, applicationContext, this)
+        cards = Statics.getCardDatabase().getAll()
+        adaptor = MainAdaptor(cards, applicationContext, this)
         recyclerview.adapter = adaptor
         recyclerview.layoutManager = LinearLayoutManager(this)
 
         //setting up add card floating button
         addCardButton = findViewById(R.id.addCardFloatingButton)
         addCardButton.setOnClickListener { _ -> //switching to adding card activity
-            Statics.switchActivity(this, CardAddOrEditActivity::class.java)
+            adaptor.addCard()
         }
     }
 
@@ -79,9 +83,11 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
             R.id.nav_settings -> Toast.makeText(applicationContext, "Settings", Toast.LENGTH_SHORT).show()
             R.id.nav_accesses -> Toast.makeText(applicationContext, "Accesses", Toast.LENGTH_SHORT).show()
             R.id.nav_add_card -> {
-                Statics.switchActivity(this, CardAddOrEditActivity::class.java)
+                adaptor.addCard()
             }
-            R.id.nav_refresh -> Toast.makeText(applicationContext, "Refresh", Toast.LENGTH_SHORT).show()
+            R.id.nav_refresh -> {
+                Toast.makeText(applicationContext, "Refresh", Toast.LENGTH_SHORT).show()
+            }
         }
         binding.main.closeDrawer(GravityCompat.START)
         return true
@@ -104,7 +110,7 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
         fragmentTransition.commit()
     }
 
-    //before using data base, this will be used for testing the recycler view of cards and image checking
+    //before using data base, this was used for testing the recycler view of cards and image checking
     private fun getSampleCards(): Array<DebitCard> {
         val card1 = DebitCard("Income Card", "5022 2901 2345 6789", "123456789012345678901234", 1, 1407, "Michael Hamilton Smith")
         val card2 = DebitCard("Safe Spending Card", "6219 8601 2345 6789", "123456789012345678901234", 2, 1408, "Michael Hamilton Smith")
@@ -114,7 +120,22 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
         val card7 = DebitCard("Kid Card", "6273 8101 2345 6789", "123456789012345678901234", 12, 1412, "Michael Hamilton Smith")
         val card8 = DebitCard("my card8", "0000 0601 2345 6789", "123456789012345678901234", 4, 1413, "Michael Hamilton Smith")
         val card9 = DebitCard("my card9", "6362 1401 2345 6789", "123456789012345678901234", 9, 1414, "Michael Hamilton Smith")
-        val bad = DebitCard("my card5", "5022 2901 2345 6789", "123456789012345678901234", 6, 1415, "Michael Hamilton Smith")
-        return arrayOf(card1, card2, card3, card4, card6, card7, card8, card9, bad)
+        return arrayOf(card1, card2, card3, card4, card6, card7, card8, card9)
+    }
+
+    fun getAdaptor(): MainAdaptor {
+        return adaptor
+    }
+    //refresh all the cards. since notifyDataSetChanged() was causing issues, this had be done unfortunately.
+    fun refreshCards() {
+        cards = Statics.getCardDatabase().getAll()
+        adaptor = MainAdaptor(cards, applicationContext, this)
+        recyclerview.adapter = adaptor
+    }
+    fun getDrawer(): DrawerLayout {
+        return parent
+    }
+    fun getCoordinatorLayout(): CoordinatorLayout {
+        return coordinatorLayout
     }
 }

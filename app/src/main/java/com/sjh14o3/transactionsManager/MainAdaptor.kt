@@ -27,6 +27,7 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.drawToBitmap
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.sjh14o3.transactionsManager.data.DebitCard
 
 //adaptor for cards recycler view
@@ -41,7 +42,6 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
     @SuppressLint("NotifyDataSetChanged")
     private fun setCards(input: Array<DebitCard>) {
         this.cards = input
-        notifyDataSetChanged()
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -204,6 +204,9 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
         holder.parent.background = ContextCompat.getDrawable(context, R.drawable.add_card)
         holder.more.visibility = View.GONE
         holder.logo.visibility = View.GONE
+        holder.parent.setOnClickListener {
+            addCard()
+        }
         return
     }
     private fun drawCard(holder: ViewHolder, card: DebitCard) {
@@ -225,7 +228,25 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
                     editCard(card)
                 }
                 "Share" -> showShareDialog(card, holder)
-                "Delete" -> Toast.makeText(context, "You clicked Delete", Toast.LENGTH_SHORT).show()
+                "Delete" -> { //an alert for confirmation will be shown first
+                    val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
+                    builder
+                        .setTitle("Warning").setIcon(R.drawable.ic_alert)
+                        .setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .setPositiveButton("Delete") { dialog, _ ->
+                            Statics.getCardDatabase().deleteCard(card.getId())
+                            activity.refreshCards()
+                            dialog.dismiss()
+                            println("LOG: hi")
+                            Snackbar.make(activity.window.decorView.findViewById(R.id.coordinate_layout), "Card was deleted", Snackbar.LENGTH_INDEFINITE).setAction("OK", View.OnClickListener {
+                                println("LOL")
+                            }).show()
+                        }.setMessage("Do you want to delete ${card.getTitle()}?")
+                    val dialog: AlertDialog = builder.create()
+                    dialog.show()
+                }
             }
             true
         }
@@ -235,5 +256,8 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
         val intent = Intent(activity, CardAddOrEditActivity::class.java)
         intent.putExtra("Card", card)
         activity.startActivity(intent)
+    }
+    fun addCard() {
+        Statics.switchActivity(activity, CardAddOrEditActivity::class.java)
     }
 }

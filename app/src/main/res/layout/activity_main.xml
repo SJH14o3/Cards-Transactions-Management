@@ -7,66 +7,71 @@
     android:layout_height="match_parent"
     android:textAlignment="gravity"
     tools:context=".MainActivity">
-
-    <RelativeLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <androidx.appcompat.widget.Toolbar
+        android:layout_height="match_parent"
+        android:id="@+id/coordinate_layout">
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:id="@+id/toolbar"
-            android:background="@color/lavender"
-            android:elevation="4dp"
-            app:title=" "
-            />
+            android:layout_height="match_parent">
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/main_frame"/>
+            <androidx.appcompat.widget.Toolbar
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:id="@+id/toolbar"
+                android:background="@color/lavender"
+                android:elevation="4dp"
+                app:title=" "
+                />
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:fontFamily="sans-serif-condensed-medium"
-            android:gravity="center"
-            android:layout_centerHorizontal="true"
-            android:elevation="5dp"
-            android:text="@string/act_app_name"
-            android:textAlignment="center"
-            android:textColor="@color/text_fill_on_lavender"
-            android:textSize="28sp" />
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/main_frame"/>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/addCardFloatingButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="@color/lavender"
-            android:clickable="true"
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:fontFamily="sans-serif-condensed-medium"
+                android:gravity="center"
+                android:layout_centerHorizontal="true"
+                android:elevation="5dp"
+                android:text="@string/act_app_name"
+                android:textAlignment="center"
+                android:textColor="@color/text_fill_on_lavender"
+                android:textSize="28sp" />
 
-
-            android:contentDescription="@string/add_card_button_screen_reader"
-            android:focusable="true"
-            app:srcCompat="@drawable/ic_add" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:layout_below="@+id/textView"
-            android:layout_marginTop="5dp"
-            android:id="@+id/mainRecyclerView"/>
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/addCardFloatingButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@color/lavender"
+                android:clickable="true"
 
 
+                android:contentDescription="@string/add_card_button_screen_reader"
+                android:focusable="true"
+                app:srcCompat="@drawable/ic_add" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:layout_below="@+id/textView"
+                android:layout_marginTop="5dp"
+                android:id="@+id/mainRecyclerView"/>
 
 
-    </RelativeLayout>
+
+
+        </RelativeLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
 
     <com.google.android.material.navigation.NavigationView
         android:layout_width="wrap_content"

@@ -2,16 +2,21 @@ package com.sjh14o3.transactionsManager
 
 import android.content.Context
 import android.content.Intent
+import com.sjh14o3.transactionsManager.database.CardDatabase
 
 //this class contains some useful variable and will be initiated in the start of application
 class Statics {
     companion object {
         private lateinit var applicationContext: Context
         private lateinit var packageName: String
+        private lateinit var cardDatabase: CardDatabase
+        private lateinit var mainActivity: MainActivity
 
-        fun setVariables(context: Context, name: String) {
+        fun setVariables(context: Context, name: String, main: MainActivity) {
             applicationContext = context
             packageName = name
+            cardDatabase = CardDatabase(context)
+            mainActivity = main
         }
 
         fun getApplicationContext(): Context {
@@ -20,6 +25,14 @@ class Statics {
 
         fun getPackageName(): String {
             return packageName
+        }
+
+        fun getCardDatabase(): CardDatabase {
+            return cardDatabase
+        }
+
+        fun getMainActivity(): MainActivity {
+            return mainActivity
         }
 
         fun switchActivity(current: Context, target: Class<*>) {
