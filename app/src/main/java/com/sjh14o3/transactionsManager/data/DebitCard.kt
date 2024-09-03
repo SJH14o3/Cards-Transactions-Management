@@ -153,7 +153,6 @@ class DebitCard: Serializable {
                 //loading in bank logo to identify bank
                 val res = Statics.getApplicationContext().resources
                 val directory = "ic_" + identifyBank(cardNumber).lowercase()
-                println(directory)
                 val resID = res.getIdentifier(directory, "drawable", Statics.getPackageName())
                 image.setImageDrawable(res.getDrawable(resID))
                 //if somehow  the bank logo was not available, a default icon will be used instead

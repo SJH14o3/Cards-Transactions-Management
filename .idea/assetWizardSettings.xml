@@ -24,8 +24,8 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="C:\Users\SJH14o3\AppData\Local\Temp\baseline_delete_24.xml" />
-                                                <entry key="opacityPercent" value="60" />
+                                                <entry key="imagePath" value="C:\Users\SJH14o3\AppData\Local\Temp\baseline_question_mark_24.xml" />
+                                                <entry key="opacityPercent" value="80" />
                                                 <entry key="paddingPercent" value="-5" />
                                               </map>
                                             </option>
@@ -37,7 +37,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialicons/delete/baseline_delete_24.xml" />
+                                                <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialicons/question_mark/baseline_question_mark_24.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -69,7 +69,9 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="ic_delete" />
+                                      <entry key="outputName" value="ic_question_mark" />
+                                      <entry key="theme" value="CUSTOM" />
+                                      <entry key="themeColor" value="000000" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -85,7 +87,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="imagePath" value="C:\Users\SJH14o3\AndroidStudioProjects\BankTest1\app\src\main\res\drawable\ic_launcher_background.xml" />
+                                                <entry key="imagePath" value="C:\Users\SJH14o3\AndroidStudioProjects\BankTest1\app\src\main\res\drawable" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -311,6 +313,11 @@
                                 </PersistentState>
                               </value>
                             </entry>
+                          </map>
+                        </option>
+                        <option name="values">
+                          <map>
+                            <entry key="outputIconType" value="ACTIONBAR" />
                           </map>
                         </option>
                       </PersistentState>

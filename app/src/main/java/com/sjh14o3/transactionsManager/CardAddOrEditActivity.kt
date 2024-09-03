@@ -411,7 +411,7 @@ class CardAddOrEditActivity : AppCompatActivity() {
         inputMonth.setText(card.getExpiryMonthWithFormat())
         inputOwnerName.setText(card.getOwnerName())
     }
-    //is called when
+    //is called when confirm button was clicked to reset all errors, the text views need to go back to default
     private fun resetTexts() {
         textTitle.setText(R.string.card_title)
         textTitle.setTextColor(resources.getColor(R.color.text_fill_default))
@@ -436,6 +436,7 @@ class CardAddOrEditActivity : AppCompatActivity() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         builder.setTitle("Success").setMessage("Card has been $mode").setPositiveButton("OK") { dialog, _ ->
             dialog.dismiss()
+        }.setOnDismissListener { //even if dialog was dismissed, activity will be finished
             Statics.getMainActivity().refreshCards()
             finish()
         }

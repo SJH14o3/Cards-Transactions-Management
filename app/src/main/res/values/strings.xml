@@ -2,7 +2,6 @@
     <string name="app_name">Transactions</string>
     <string name="act_app_name">My Cards</string>
     <string name="add_bank">Add New Card</string>
-    <string name="empty" />
 
     <string name="placeholder">place holder</string>
 
@@ -21,10 +20,6 @@
     <string name="edit">Edit</string>
     <string name="share">Share</string>
     <string name="delete">Delete</string>
-    <string name="sharing_method">Choose Sharing Method</string>
-    <string name="share_card_number">Card Number</string>
-    <string name="share_shaba_number">Shaba Number</string>
-    <string name="share_image">Share Image</string>
 
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
@@ -33,7 +28,6 @@
     <string name="shaba">IR%1$s</string>
     <string name="image_of_bank_logo">Image of Bank Log</string>
     <string name="more_options_for_card">more options for card</string>
-    <string name="menu">menu</string>
     <string name="card_title">Card Title</string>
     <string name="characters_limit">30 Characters Max</string>
     <string name="card_number">Card Number</string>
@@ -41,8 +35,6 @@
     <string name="ir">IR</string>
     <string name="exactly_24_numbers">Exactly 24 Numbers</string>
     <string name="expiry">Expiry</string>
-    <string name="month">Month</string>
-    <string name="year">Year</string>
     <string name="date_separator">/</string>
     <string name="month_hint">Month (1–12)</string>
     <string name="year_hint">Year (4 Digits)</string>
@@ -61,6 +53,52 @@
     <string name="error_year_not_filled">️️⚠️Fill year cell with 4 digits</string>
     <string name="error_year_mismatch_number">⚠️Insert only digits for year</string>
     <string name="error_owner_empty">⚠️Enter Owner Name</string>
+    <string name="transactions">Transactions</string>
+    <string name="add_transaction">Add Transaction</string>
+    <string name="select_interval">Select Interval</string>
+    <string name="this_month_report">This Month Report</string>
+    <string name="select_this_month">Select This Month</string>
+    <string name="click_to_expand">Click To Expand</string>
+    <string name="more_option_for_transaction">more option for transaction</string>
 
 
+    <string name="add_new_transaction">Add New Transaction</string>
+    <string name="change">Change</string>
+    <string name="pick_a_date">Pick a date</string>
+    <string name="income">Income</string>
+    <string name="spent">Spent</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="pick_time">Pick time</string>
+    <string name="category">Category</string>
+    <string name="pick_a_category">Pick a category</string>
+    <string name="notes">Notes</string>
+    <string name="custom_remain">Custom Remain</string>
+    <string name="remain">Remain</string>
+
+    <string name="insert_a_number">⚠️Insert a number</string>
+    <string name="select_a_date">⚠️select a date</string>
+    <string name="select_time">⚠️select time</string>
+    <string name="select_category">⚠️select category</string>
+    <string name="warning_custom_remain">Warning, There are transactions after your selected time, You must enter remain manually.</string>
+
+    <string name="_15_digits_max">15 digits max (In Rial)</string>
+    <string name="maximum_remain_digits">18 digits max (In Rial)</string>
+    <string name="_250_characters_max">250 characters max (can be left empty)</string>
+
+    <string name="groceries">Groceries</string>
+    <string name="cafe_restaurant">Cafe/Restaurant</string>
+    <string name="entertainment">Entertainment</string>
+    <string name="bill">Bill</string>
+    <string name="transportation">Transportation</string>
+    <string name="insurance">Insurance</string>
+    <string name="healthcare">Healthcare</string>
+    <string name="education">Education</string>
+    <string name="clothing">Clothing</string>
+    <string name="investment">Investment</string>
+    <string name="debt">Debt</string>
+    <string name="tax">Tax</string>
+    <string name="housing">Housing</string>
+    <string name="other">Other</string>
+    <string name="no_transaction">No Transaction</string>
 </resources>

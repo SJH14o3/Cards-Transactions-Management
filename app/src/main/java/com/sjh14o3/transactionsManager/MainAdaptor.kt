@@ -19,7 +19,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
@@ -80,9 +79,12 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
             showMorePopUp(holder, card)
         }
         //this will bring transactions history of clicked card
-        //TODO: switch to card transaction history here
         holder.parent.setOnClickListener {
-            Toast.makeText(context,  "$bankName was clicked", Toast.LENGTH_SHORT).show()
+            val intent = Intent(activity, CardOverviewActivity::class.java)
+            //some extra information need to be sent to the activity
+            intent.putExtra("CardID", card.getId())
+            intent.putExtra("CardNumber", card.getCardNumber())
+            activity.startActivity(intent)
         }
         //if background of card is customized, the text color will be changed too
         val color = DebitCard.getColor(bankName)
@@ -222,7 +224,6 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
         val moreMenu = PopupMenu(context, holder.more)
         moreMenu.menuInflater.inflate(R.menu.card_more, moreMenu.menu)
         moreMenu.setOnMenuItemClickListener { item ->
-            //TODO: Implement Edit and Delete card
             when(item.title) {
                 "Edit" -> {
                     editCard(card)
@@ -234,16 +235,15 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
                         .setTitle("Warning").setIcon(R.drawable.ic_alert)
                         .setNegativeButton("Cancel") { dialog, _ ->
                             dialog.dismiss()
-                        }
+                        } //TODO: delete all transactions associated with the deleted card
                         .setPositiveButton("Delete") { dialog, _ ->
                             Statics.getCardDatabase().deleteCard(card.getId())
                             activity.refreshCards()
                             dialog.dismiss()
-                            println("LOG: hi")
                             Snackbar.make(activity.window.decorView.findViewById(R.id.coordinate_layout), "Card was deleted", Snackbar.LENGTH_INDEFINITE).setAction("OK", View.OnClickListener {
-                                println("LOL")
                             }).show()
-                        }.setMessage("Do you want to delete ${card.getTitle()}?")
+                        }.setMessage("Do you want to delete ${card.getTitle()}?\nAll of the information" +
+                                "including transactions of the card will be lost forever")
                     val dialog: AlertDialog = builder.create()
                     dialog.show()
                 }

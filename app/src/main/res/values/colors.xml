@@ -4,9 +4,14 @@
     <color name="white">#FFFFFF</color>
     <color name="lavender">#DCC6FF</color>
     <color name="text_fill_on_lavender">#45454F</color>
-    <color name="pasargad_text_fill">#F0C239</color>
-    <color name="mehr_text_fill">#35D930</color>
-    <color name="saman_text_fill">#66D6FF</color>
     <color name="error">#FF0000</color>
     <color name="text_fill_default">#49454F</color>
+    <color name="transaction_background_odd">#CFB2FF</color>
+    <color name="transaction_background_even">#EFE5FF</color>
+    <color name="income_text">#00C200</color>
+    <color name="spent_text">#DB0000</color>
+    <color name="disabled_background">#B5B5B5</color>
+
+    <color name="mehr_text_fill">#35D930</color>
+
 </resources>

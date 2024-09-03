@@ -17,6 +17,12 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    configurations {
+        all {
+            exclude("com.android.support", "support-compat")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -40,7 +46,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -51,6 +56,7 @@ dependencies {
     implementation(files("C:\\permanently\\libraries\\android\\commons-codec-1.15.pom"))
     implementation(libs.androidx.runtime.android)
     implementation(libs.androidx.material3.android)
+    implementation("com.github.prolificinteractive:material-calendarview:2.0.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
