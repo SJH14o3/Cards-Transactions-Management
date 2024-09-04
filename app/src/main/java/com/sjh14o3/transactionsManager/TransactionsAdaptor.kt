@@ -2,15 +2,19 @@ package com.sjh14o3.transactionsManager
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.sjh14o3.transactionsManager.data.Transaction
 
@@ -29,6 +33,7 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
         var dynamicLayout: ConstraintLayout = itemView.findViewById(R.id.dynamic_layout)
         var note: TextView = itemView.findViewById(R.id.note)
         var remain: TextView = itemView.findViewById(R.id.remain)
+        var canBeModified = true
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -41,14 +46,14 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val transaction = transactions[position]
+        if (position == 0 || position == 1) {
+            holder.parent.visibility = View.INVISIBLE
+            return
+        }
         drawTransaction(holder, transaction, position)
     }
     @SuppressLint("SetTextI18n")
     private fun drawTransaction(holder: ViewHolder, transaction: Transaction, position: Int) {
-        if (transaction.getDate().isEmpty()) {
-            holder.parent.visibility = View.INVISIBLE
-            return
-        }
         //odd cards and even cards will have separate background color
         if (position % 2 == 1) holder.parent.setBackgroundColor(activity.resources.getColor(R.color.transaction_background_even))
         holder.date.text = transaction.getDate() //TODO: test three modes
@@ -59,7 +64,7 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
             holder.change.text = "+" + Transaction.getSeparatedDigits(transaction.getChange())
             holder.change.setTextColor(context.resources.getColor(R.color.income_text))
         } else {
-            holder.change.text = "-" + Transaction.getSeparatedDigits(transaction.getChange())
+            holder.change.text = Transaction.getSeparatedDigits(transaction.getChange())
             holder.change.setTextColor(context.resources.getColor(R.color.spent_text))
         }
         val note = transaction.getNote()
@@ -76,8 +81,18 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
         }
 
         holder.moreButton.setOnClickListener {
-            //TODO: transactions more options
-            Toast.makeText(context, "${Transaction.getTypeName(transaction.getType())} is clicked", Toast.LENGTH_SHORT).show()
+            showTransactionMore(holder, transaction)
+        }
+        var year = transaction.getDateAndTimeAsLong().toString().substring(0,4).toInt()
+        var month = transaction.getDateAndTimeAsLong().toString().substring(4,6).toInt() + 3
+        if (month > 12) {
+            month -= 12
+            year += 1
+        }
+        val formattedMonth = if (month < 10) "0$month" else month.toString()
+        val limit = "${year}${formattedMonth}${transaction.getDateAndTimeAsLong().toString().substring(6)}".toLong()
+        if (limit < Statics.getExactTime()) {
+            holder.canBeModified = false
         }
     }
     //expand the minimized card, minimize the expanded card
@@ -89,6 +104,83 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
         else {
             layout.visibility = View.GONE
             button.setImageResource(R.drawable.ic_expand)
+        }
+    }
+
+    //when more button on a transaction card is clicked, it will show a pop up menu
+    private fun showTransactionMore(holder: ViewHolder, transaction: Transaction) {
+        val moreMenu = PopupMenu(context, holder.moreButton)
+        if (holder.canBeModified) {
+            moreMenu.menuInflater.inflate(R.menu.transaction_more, moreMenu.menu)
+        }
+        else {
+            moreMenu.menuInflater.inflate(R.menu.transaction_one_option, moreMenu.menu)
+        }
+        moreMenu.setOnMenuItemClickListener { item ->
+            when(item.title) {
+                "Edit" -> {
+                    println(transaction)
+                }
+                "Share" -> {
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        val debitCard = Statics.getCardDatabase().getCard(cardID)
+                        putExtra(Intent.EXTRA_TEXT, "Transaction From card: ${debitCard.getCardNumber()}\n" +
+                                "Time: ${holder.date.text} ${holder.time.text}\nChange: ${holder.change.text}\n" +
+                                "Remain: ${holder.remain.text}\n" +
+                                "Note: ${holder.note.text}")
+                        type = "text/plain"
+                    }
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    startActivity(activity ,shareIntent, null)
+                }
+                "Delete" -> { //an alert for confirmation will be shown first
+                    AlertDialog.Builder(activity)
+                        .setTitle("Warning").setIcon(R.drawable.ic_alert)
+                        .setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .setPositiveButton("Delete") { dialog, _ ->
+                            deleteShowAskForUpdateRowsTransaction(transaction)
+                        }.setMessage("This Transaction Will be deleted for ever!")
+                        .create().show()
+                }
+            }
+            true
+        }
+        moreMenu.show()
+    }
+
+    private fun deleteShowAskForUpdateRowsTransaction(transaction: Transaction) {
+        //this is not the last transaction
+        if (Statics.getTransactionDatabase().getLastDateAndTime(cardID) != transaction.getDateAndTimeAsLong()) {
+            AlertDialog.Builder(activity).setTitle("Choose Action")
+                .setMessage("This transaction which you are willing to delete, is not the newest one." +
+                        "Do you want to automatically change remain of next transactions?" +
+                        "be aware that if during modifying next transactions, if a transaction remain" +
+                        "become negative, this will failed and you have to change them manually")
+                .setPositiveButton("Update") { dialog, _ ->
+                    if (Statics.getTransactionDatabase().updateNextRowsRemain(transaction.getDateAndTimeAsLong(),
+                            transaction.getChange(), cardID)) {
+                        Statics.getTransactionDatabase().deleteTransaction(transaction.getId())
+                        Toast.makeText(activity, "Deletion and auto fix were successful", Toast.LENGTH_LONG).show()
+                        activity.refreshFromAdaptor()
+                    } else {
+                        AlertDialog.Builder(activity).setMessage("Failed").
+                        setMessage("With the custom remain, some of the next transactions became negative!" +
+                                " try deleting again but don't update the next rows and fix the remain manually.")
+                            .setPositiveButton("OK") { _, _ -> }.create().show()
+                    }
+                }.setNegativeButton("Don't Update") { _, _ ->
+                    Statics.getTransactionDatabase().deleteTransaction(transaction.getId())
+                    activity.refreshFromAdaptor()
+                }.setNeutralButton("Cancel Deletion") { dialog, _ ->
+                    dialog.dismiss()
+                }.setCancelable(false).create().show()
+        } else {
+            Statics.getTransactionDatabase().deleteTransaction(transaction.getId())
+            Toast.makeText(activity, "Deletion was successful", Toast.LENGTH_LONG).show()
+            activity.refreshFromAdaptor()
         }
     }
 }

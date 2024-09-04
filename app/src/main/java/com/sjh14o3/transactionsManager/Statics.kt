@@ -1,10 +1,12 @@
 package com.sjh14o3.transactionsManager
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import com.sjh14o3.transactionsManager.data.MyDate
 import com.sjh14o3.transactionsManager.database.CardDatabase
 import com.sjh14o3.transactionsManager.database.TransactionDatabase
+import java.text.SimpleDateFormat
 import java.util.Calendar
 
 //this class contains some useful variable and will be initiated in the start of application
@@ -52,6 +54,13 @@ class Statics {
         fun getDate(): MyDate {
             val currentDate = Calendar.getInstance()
             return MyDate(currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH) + 1, currentDate.get(Calendar.DAY_OF_MONTH))
+        }
+        //this function will return right now time as a format
+        @SuppressLint("SimpleDateFormat")
+        fun getExactTime(): Long {
+            val calendar = Calendar.getInstance()
+            val formatter = SimpleDateFormat("yyyyMMddhhmm")
+            return formatter.format(calendar.time).toLong()
         }
     }
 }

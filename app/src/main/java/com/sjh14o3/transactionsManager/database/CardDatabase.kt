@@ -100,15 +100,27 @@ class CardDatabase(context: Context):  SQLiteOpenHelper(context, "cards.db", nul
     }
     //card will be deleted here
     fun deleteCard(id: Int): Boolean {
-        //TODO: Delete every transactions with this card
         val db = writableDatabase
         val sql = "DELETE FROM $CARDS_TABLE WHERE $COLUMN_ID = $id"
-        println("LOG: Query=$sql")
         val cursor = db.rawQuery(sql, null)
         val out = (cursor.count != 0)
-        println("LOG: out = $out")
         cursor.close()
         return out
     }
 
+    //this function will return the debit card when id is passed
+    fun getCard(id: Int): DebitCard {
+        val query = "SELECT * FROM $CARDS_TABLE WHERE $COLUMN_ID = $id"
+        val db = readableDatabase
+        val cursor = db.rawQuery(query, null)
+        cursor.moveToFirst()
+        val cardNumberLong = cursor.getLong(2).toString()
+        val cardNumber = "${cardNumberLong.substring(0,4)} ${cardNumberLong.substring(4,8)} " +
+                "${cardNumberLong.substring(8,12)} ${cardNumberLong.substring(12,16)}"
+        val card = DebitCard(cursor.getString(1), cardNumber, cursor.getString(3),
+            cursor.getShort(4).toByte(), cursor.getShort(5), cursor.getString(6), id)
+        cursor.close()
+        db.close()
+        return card
+    }
 }

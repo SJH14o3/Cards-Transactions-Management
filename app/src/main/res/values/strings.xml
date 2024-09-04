@@ -80,7 +80,7 @@
     <string name="select_a_date">⚠️select a date</string>
     <string name="select_time">⚠️select time</string>
     <string name="select_category">⚠️select category</string>
-    <string name="warning_custom_remain">Warning, There are transactions after your selected time, You must enter remain manually.</string>
+    <string name="warning_custom_remain">Warning, There are transactions after your selected time. you will be asked for an extra action after confirmation</string>
 
     <string name="_15_digits_max">15 digits max (In Rial)</string>
     <string name="maximum_remain_digits">18 digits max (In Rial)</string>

@@ -43,6 +43,9 @@ class CardOverviewActivity : AppCompatActivity() {
     private lateinit var remainText: TextView
     private var cardID: Int = -1
     private var selectedDate = ""
+    private var currentStart: Long = -1
+    private var currentEnd: Long = -1
+    private var isFirstCalendarRefresh = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card_overview)
@@ -57,8 +60,45 @@ class CardOverviewActivity : AppCompatActivity() {
         //by default, transactions of current IRL months will shown
         transactions = Statics.getTransactionDatabase().getCardAllTransactionsThisMonth(cardID)
         refreshWholeData()
+        setCalendarRange()
+        setListeners()
+        val formatted = SimpleDateFormat("yyyyMMdd")
+        //selected date is used for "Select This Month" button, this is actually to prevent a crash,
+        // since if this is empty and button is pressed app will crash
+        selectedDate = formatted.format(calendar.date)
+    }
+    //refresh recycler view with the inserted range
+    private fun setTransactionsRange(start: Long, end: Long) {
+        currentStart = start
+        currentEnd = end
+        transactions = Statics.getTransactionDatabase().getCardAllTransactionsCustomRange(cardID ,start, end)
+        refreshWholeData()
+    }
+
+    //to be able to refresh items from adaptor, this public function is here
+    fun refreshFromAdaptor() {
+        transactions = if (currentEnd == -1L) {
+            Statics.getTransactionDatabase().getCardAllTransactionsThisMonth(cardID)
+        } else {
+            Statics.getTransactionDatabase().getCardAllTransactionsCustomRange(cardID, currentStart, currentEnd)
+        }
+        refreshWholeData()
+        setCalendarRange()
+    }
+
+    /*set minimum calendar range to first transaction time and max date to today
+    * NOTE: I have tried using this method for some scenarios (like removing first transaction)
+    *  to kinda dynamically refresh the min and max date but it there is a bug where it won't do it
+    * dynamically, but it you refresh this activity is will work. I spent a long time trying to fix
+    * the issue but I didn't find any fix. I gave up.*/
+    private fun setCalendarRange() {
+        if (isFirstCalendarRefresh) {
+            isFirstCalendarRefresh = false
+        } else Toast.makeText(this, "If calendar is bugged, reopen this page", Toast.LENGTH_LONG).show()
         //to set minimum date the calendar shows, time of the first transaction will be extracted
         val first = Statics.getTransactionDatabase().getFirstDateAndTime(cardID).toString()
+        println("Calendar current min date = ${calendar.minDate}")
+        println("LOG: FIRST TRANSACTION: $first")
         calendar.maxDate = System.currentTimeMillis() - 1000 //max date is today by default
         if (first == "0") { //if no transaction exist for that card, first is 0, so the only selectable date is today
             calendar.minDate = System.currentTimeMillis() - 2000
@@ -68,17 +108,8 @@ class CardOverviewActivity : AppCompatActivity() {
             calendarInstance.set(first.substring(0,4).toInt(), first.substring(4,6).toInt() - 1, first.substring(6,8).toInt())
             calendar.minDate = calendarInstance.timeInMillis
         }
-        setListeners()
-        val formatted = SimpleDateFormat("yyyyMMdd")
-        //selected date is used for "Select This Month" button, this is actually to prevent a crash,
-        // since if this is empty and button is pressed app will crash
-        selectedDate = formatted.format(calendar.date)
-
-    }
-    //refresh recycler view with the inserted range
-    private fun setTransactionsRange(start: Long, end: Long) {
-        transactions = Statics.getTransactionDatabase().getCardAllTransactionsCustomRange(cardID ,start, end)
-        refreshWholeData()
+        calendar.date = System.currentTimeMillis()
+        calendar.invalidate()
     }
 
     //after adding or editing transaction is done, this function will run
@@ -98,6 +129,7 @@ class CardOverviewActivity : AppCompatActivity() {
             transactions = Statics.getTransactionDatabase().getCardAllTransactionsThisMonth(cardID)
             refreshWholeData()
         }
+        setCalendarRange()
     }
 
     private fun injectComponents(cardNumber: String) {
@@ -143,8 +175,6 @@ class CardOverviewActivity : AppCompatActivity() {
             val start = "${date.getYear()}${date.getMonthFormatted()}${date.getDayFormatted()}2500".toLong()
             val end = "${date.getYear()}${date.getMonthFormatted()}${date2.getDayFormatted()}2500".toLong()
             selectedDate = "${date.getYear()}${date.getMonthFormatted()}${date2.getDayFormatted()}"
-            println("LOG: START: $start")
-            println("LOG: END: $end")
             setTransactionsRange(start, end)
         }
         addTransaction.setOnClickListener {
@@ -153,7 +183,6 @@ class CardOverviewActivity : AppCompatActivity() {
             startActivityForResult(intent, ADD_TRANSACTION_REQUEST_CODE)
         }
         selectMonth.setOnClickListener {
-            println("LOG: SELECTED DATE = $selectedDate")
             val start = "${selectedDate.substring(0,6)}000000".toLong()
             val end = "${selectedDate.substring(0,6)}990000".toLong()
             setTransactionsRange(start, end)

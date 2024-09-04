@@ -62,11 +62,22 @@
                 app:layout_constraintTop_toBottomOf="@id/change_text_view"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5,000,000.0T"
+                android:id="@+id/changeToman"
+                android:textSize="16sp"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/change_text_view"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:ignore="HardcodedText" />
             <EditText
                 android:layout_width="300dp"
                 android:layout_height="50dp"
                 android:inputType="number"
-                app:layout_constraintTop_toBottomOf="@id/alert_change"
+                app:layout_constraintTop_toBottomOf="@id/changeToman"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:id="@+id/input_change"
@@ -311,6 +322,16 @@
                     android:layout_centerHorizontal="true"
                     android:layout_below="@id/remain_text_view"
                     android:textColor="@color/error" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5,000,000.0T"
+                    android:id="@+id/remainToman"
+                    android:textSize="16sp"
+                    android:visibility="gone"
+                    android:layout_below="@id/alert_remain"
+                    android:layout_centerHorizontal="true"
+                    tools:ignore="HardcodedText" />
                 <EditText
                     android:layout_width="300dp"
                     android:layout_height="50dp"
@@ -320,7 +341,7 @@
                     android:gravity="center"
                     android:maxLength="18"
                     android:layout_centerHorizontal="true"
-                    android:layout_below="@id/alert_remain"
+                    android:layout_below="@id/remainToman"
                     android:importantForAutofill="no"/>
             </RelativeLayout>
             <View

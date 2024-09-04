@@ -47,6 +47,8 @@ class TransactionModifyActivity : AppCompatActivity() {
     private lateinit var errorCategory: TextView
     private lateinit var errorRemain: TextView
     private lateinit var warningCustomRemain: TextView
+    private lateinit var inputToman: TextView
+    private lateinit var remainToman: TextView
 
     private lateinit var inputChange: EditText
     private lateinit var inputNotes: EditText
@@ -64,8 +66,9 @@ class TransactionModifyActivity : AppCompatActivity() {
     private var remainWarningBroughtUp = false
     private var cardID: Int = -1
     private var lastRemain = -1L
+    private var lastRemainBefore = -1L
     private var lastTransactionTime = -1L
-    private var mandatoryRemain = false
+    private var notLastTransaction = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -129,6 +132,9 @@ class TransactionModifyActivity : AppCompatActivity() {
         remainLayout = findViewById(R.id.remain_panel)
         radioButtonIncome = findViewById(R.id.radio_gain)
         radioButtonSpend = findViewById(R.id.radio_lost)
+
+        inputToman = findViewById(R.id.changeToman)
+        remainToman = findViewById(R.id.remainToman)
     }
 
     //after category was selected, image view will show that category
@@ -144,19 +150,18 @@ class TransactionModifyActivity : AppCompatActivity() {
         categoryIcon.setImageDrawable(res.getDrawable(resID))
     }
 
-    /*it won't be easy to just change the remain since it will makes some inaccuracy.
+    /*it won't be easy to just change the remain since it will makes some inaccuracy since it will reset remain
     * I can say this was not necessary but I did it anyway.*/
     private fun showCustomRemainWarning() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         builder
-            .setTitle("Warning").setMessage("Custom Remain may result in inaccuracy.\n\n" +
-                    "-If you are adding multiple transactions at once, we suggest adding transactions in order.\n" +
-                    "-if you made a custom remain, the next transactions will calculate remain from this transaction.")
+            .setTitle("Warning").setMessage("Custom Remain may result in inaccuracy.\n" +
+                    "Next transactions remain will be calculated from this transaction remain (meaning it would reset remain kinda like this is the first transaction)\n" +
+                    "If you are adding multiple transactions at once, we suggest adding transactions in order. to prevent some complications")
             .setNegativeButton("Cancel") { dialog, _ ->
                 remainCheck.isChecked = false
             }.setPositiveButton("Acknowledge") { dialog, _ ->
                 remainWarningBroughtUp = true
-                inputRemain.setText("")
             }.setOnDismissListener {
                 if (!remainWarningBroughtUp) {
                     remainCheck.isChecked = false
@@ -211,6 +216,13 @@ class TransactionModifyActivity : AppCompatActivity() {
             out = false
             sb.append("-remain cannot be negative, check Custom Remain if you believe automatic remain calculation is wrong.")
         }
+        //user can't set a remain where income change is more than remain!
+        if (remainCheck.isChecked && radioButtonIncome.isChecked &&
+            inputRemain.text.toString().toLong() < inputChange.toString().toLong()) {
+            if (!out) sb.append("\n")
+            out = false
+            sb.append("-you inserted income and it's more than your inserted remain? NONSENSE!")
+        }
         if (!out) {
             showValidationFailedDialog(sb)
         }
@@ -227,7 +239,11 @@ class TransactionModifyActivity : AppCompatActivity() {
         if (radioButtonSpend.isChecked) {
             newRemain = lastRemain - inputChange.text.toString().toLong()
         } else newRemain = lastRemain + inputChange.text.toString().toLong()
-        inputRemain.setText(newRemain.toString())
+        if (!notLastTransaction) {
+            inputRemain.setText(newRemain.toString())
+        } else {
+            checkIfLastTransaction()
+        }
     }
 
     //picking time dialog
@@ -252,7 +268,8 @@ class TransactionModifyActivity : AppCompatActivity() {
     /*this is an important function, if the current inserted time is not after the newest saved transaction,
     * inputting remain will become mandatory, and user will also be asked to change the remain of the next transactions
     * most important thing is remain cannot be negative so if a transaction remain become negative, user won't be
-    * allowed to insert the transaction. I did test some scenarios but I can't be sure if this still works properly*/
+    * allowed to insert the transaction. I did test some scenarios but I can't be sure if this still works properly\
+    * UPDATE: I made a change where remain will automatically updates to the last remain, this might help user better*/
     private fun checkIfLastTransaction() {
         if (pickedDate == null) {
             errorDate.visibility = View.VISIBLE
@@ -266,16 +283,14 @@ class TransactionModifyActivity : AppCompatActivity() {
                 "${pickedTime!!.getHourFormatted()}${pickedTime!!.getMinuteFormatted()}").toLong()
         if (current < lastTransactionTime) {
             warningCustomRemain.visibility = View.VISIBLE
-            mandatoryRemain = true
-            remainCheck.isChecked = true
-            inputRemain.setText("")
-            remainCheck.isEnabled = false
+            notLastTransaction = true
+            lastRemainBefore = Statics.getTransactionDatabase().getLastRemainBeforeTime(cardID, current)
+            setRemainForNotLastTransaction()
+
         }
         else {
             warningCustomRemain.visibility = View.GONE
-            mandatoryRemain = false
-            remainCheck.isChecked = false
-            remainCheck.isEnabled = true
+            notLastTransaction = false
         }
     }
 
@@ -332,7 +347,7 @@ class TransactionModifyActivity : AppCompatActivity() {
         builder.setTitle("Success").setMessage("Transaction was $mode successfully").setPositiveButton("OK") { dialog, _ ->
             dialog.dismiss()
         }.setOnDismissListener {
-            if (mandatoryRemain) {
+            if (notLastTransaction) {
                 setResult(-10)
             } else {
                 setResult(Activity.RESULT_OK)
@@ -351,8 +366,12 @@ class TransactionModifyActivity : AppCompatActivity() {
                 category = 0
                 //function Auto Set Remain was not changing remain properly during this event so I had to do it manually
                 if (!remainCheck.isChecked && inputChange.text.isNotEmpty()) {
-                    val newRemain = lastRemain + inputChange.text.toString().toLong()
-                    inputRemain.setText(newRemain.toString())
+                    if (notLastTransaction) {
+                        inputRemain.setText((lastRemainBefore + inputChange.text.toString().toLong()).toString())
+                    } else {
+                        val newRemain = lastRemain + inputChange.text.toString().toLong()
+                        inputRemain.setText(newRemain.toString())
+                    }
                 }
             }
         }
@@ -364,8 +383,12 @@ class TransactionModifyActivity : AppCompatActivity() {
                 buttonCategoryPicker.setBackgroundColor(ContextCompat.getColor(this, R.color.lavender))
                 category = -1
                 if (!remainCheck.isChecked && inputChange.text.isNotEmpty()) {
-                    val newRemain = lastRemain - inputChange.text.toString().toLong()
-                    inputRemain.setText(newRemain.toString())
+                    if (notLastTransaction) {
+                        inputRemain.setText((lastRemainBefore - inputChange.text.toString().toLong()).toString())
+                    } else {
+                        val newRemain = lastRemain - inputChange.text.toString().toLong()
+                        inputRemain.setText(newRemain.toString())
+                    }
                 }
             }
         }
@@ -390,11 +413,10 @@ class TransactionModifyActivity : AppCompatActivity() {
 
         remainCheck.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                if (!remainWarningBroughtUp && !mandatoryRemain) {
+                if (!remainWarningBroughtUp) {
                     showCustomRemainWarning()
                 }
                 remainLayout.setBackgroundDrawable(null)
-                inputRemain.setText("")
                 inputRemain.isEnabled = true
             } else {
                 remainLayout.setBackgroundColor(resources.getColor(R.color.disabled_background))
@@ -419,6 +441,7 @@ class TransactionModifyActivity : AppCompatActivity() {
                 if (!remainCheck.isChecked) {
                     autoSetRemain()
                 }
+                giveTomanDescription(inputChange.text.toString(), inputToman)
             }
         })
 
@@ -433,6 +456,7 @@ class TransactionModifyActivity : AppCompatActivity() {
                 if (errorRemain.visibility == View.VISIBLE) {
                     errorRemain.visibility = View.GONE
                 }
+                giveTomanDescription(inputRemain.text.toString(), remainToman)
             }
 
         })
@@ -472,7 +496,7 @@ class TransactionModifyActivity : AppCompatActivity() {
     //transaction will be added
     private fun addTransaction() {
         val transaction = createTransaction()
-        if (Statics.getTransactionDatabase().hasDateConflict(transaction.getDateAndTimeAsLong())) {
+        if (Statics.getTransactionDatabase().hasDateConflict(transaction.getDateAndTimeAsLong(), cardID)) {
             showConflictingDialog()
         } else {
             if (Statics.getTransactionDatabase().addTransaction(transaction)) {
@@ -484,13 +508,28 @@ class TransactionModifyActivity : AppCompatActivity() {
     //if the next transactions remain need to be updated, this function will operate
     private fun addAndUpdateTransactions() {
         val transaction = createTransaction()
-        if (Statics.getTransactionDatabase().hasDateConflict(transaction.getDateAndTimeAsLong())) {
+        if (Statics.getTransactionDatabase().hasDateConflict(transaction.getDateAndTimeAsLong(), cardID)) {
             showConflictingDialog()
         } else {
-            if (Statics.getTransactionDatabase().updateNextRowsRemain(transaction.getDateAndTimeAsLong(),
-                    transaction.getRemain(), transaction.getBankId(), this)) {
+            if (Statics.getTransactionDatabase().resetNextRowsRemain(transaction.getDateAndTimeAsLong(),
+                    transaction.getRemain(), transaction.getBankId())) {
                 addTransaction()
+            } else {
+                AlertDialog.Builder(this).setMessage("Failed").
+                setMessage("With the custom remain, some of the next transactions became negative!\ncannot do your transaction")
+                    .setPositiveButton("OK") { _, _ -> }.create().show()
             }
+        }
+    }
+
+    private fun setRemainForNotLastTransaction() {
+        if (inputChange.text.isNotEmpty()) {
+            val remain = if (radioButtonIncome.isChecked) {
+                lastRemainBefore + inputChange.text.toString().toLong()
+            } else {
+                lastRemainBefore - inputChange.text.toString().toLong()
+            }
+            inputRemain.setText(remain.toString())
         }
     }
 
@@ -502,6 +541,16 @@ class TransactionModifyActivity : AppCompatActivity() {
         return Transaction("${pickedDate!!.getYear()}-${pickedDate!!.getMonthFormatted()}-${pickedDate!!.getDayFormatted()}",
             "${pickedTime!!.getHourFormatted()}:${pickedTime!!.getMinuteFormatted()}",
             change.toLong(), inputRemain.text.toString().toLong(),inputNotes.text.toString(), category, cardID)
+    }
+
+    private fun giveTomanDescription(input: String, view: TextView) {
+        if (input.isEmpty()) {
+            view.visibility = View.GONE
+            view.text = ""
+        } else {
+            view.visibility = View.VISIBLE
+            view.text = "${Transaction.getSeparatedDigits(input.toLong())}T"
+        }
     }
     //TODO:warn user if there is a transaction after new one and auto change of remain for this scenario and editing scenario
 }

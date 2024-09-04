@@ -5,8 +5,6 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import androidx.appcompat.app.AlertDialog
-import com.sjh14o3.transactionsManager.TransactionModifyActivity
 import com.sjh14o3.transactionsManager.data.MyDate
 import com.sjh14o3.transactionsManager.data.Transaction
 import java.util.Calendar
@@ -42,7 +40,7 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
     //with inserted two ranges, all transaction between that time will be returned
     fun getCardAllTransactionsCustomRange(cardID: Int, start: Long, end: Long): Array<Transaction> {
         val out: ArrayList<Transaction>
-        val sql = "SELECT * FROM $TRANSACTION_TABLE WHERE $BANK_ID = $cardID AND $COLUMN_DATE > $start AND $COLUMN_DATE < $end ORDER BY $COLUMN_DATE"
+        val sql = "SELECT * FROM $TRANSACTION_TABLE WHERE $BANK_ID = $cardID AND $COLUMN_DATE >= $start AND $COLUMN_DATE < $end ORDER BY $COLUMN_DATE"
         val db = this.readableDatabase
         val cursor = db.rawQuery(sql, null)
         out = duplicateGetAll(cursor, cardID)
@@ -82,7 +80,7 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
                 val note = cursor.getString(4)
                 val type = cursor.getShort(5).toByte()
                 val remain = cursor.getLong(6)
-                out.add(Transaction(date, time, change, remain, note, type, cardID, id))
+                out.add(Transaction(date, time, change, remain, note, type, id, cardID))
             } while(cursor.moveToNext())
         } else { //there was no result in the query
             out = java.util.ArrayList(2)
@@ -111,15 +109,27 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
     fun getLastRemain(bankID: Int): Long {
         val out: Long
         val query = "SELECT $COLUMN_REMAIN FROM $TRANSACTION_TABLE WHERE $BANK_ID = $bankID ORDER BY $COLUMN_DATE DESC LIMIT 1"
+        return getLastRemainDuplicate(query)
+    }
+
+    //will return remain of the card but before the inserted time
+    fun getLastRemainBeforeTime(cardId: Int, time: Long): Long {
+        val out: Long
+        val query = "SELECT $COLUMN_REMAIN FROM $TRANSACTION_TABLE WHERE $BANK_ID = $cardId AND $COLUMN_DATE < $time ORDER BY $COLUMN_DATE DESC LIMIT 1"
+        return getLastRemainDuplicate(query)
+    }
+
+    private fun getLastRemainDuplicate(query: String): Long {
         val db = this.readableDatabase
         val cursor = db.rawQuery(query, null)
-        if (cursor.moveToFirst()) {
-            out = cursor.getLong(0)
-        } else return 0L
+        val out = if (cursor.moveToFirst()) {
+            cursor.getLong(0)
+        } else 0L
         cursor.close()
         db.close()
         return out
     }
+
 
     //get the newest transaction time
     fun getLastDateAndTime(bankID: Int): Long {
@@ -147,9 +157,9 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
     }
 
     //it is not allowed to have two transaction at the same exact time (year-month-day-hour-minute)
-    fun hasDateConflict(date: Long): Boolean {
+    fun hasDateConflict(date: Long, bankID: Int): Boolean {
         val out: Boolean
-        val query = "SELECT $COLUMN_TYPE FROM $TRANSACTION_TABLE WHERE $COLUMN_DATE = $date LIMIT 1"
+        val query = "SELECT $COLUMN_TYPE FROM $TRANSACTION_TABLE WHERE $COLUMN_DATE = $date AND $BANK_ID = $bankID LIMIT 1"
         val db = this.readableDatabase
         val cursor = db.rawQuery(query, null)
         out = cursor.moveToFirst()
@@ -158,28 +168,21 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
         return out
     }
 
-    /*this function will update the remain of the transaction after the selected interval. if a transaction
-    * remain become negative, the operation will fail and all the changes will be rolled back*/
-    fun updateNextRowsRemain(date: Long, remainInput: Long, cardID: Int, activity: TransactionModifyActivity): Boolean {
-        val db: SQLiteDatabase
+    /*this function will reset the remain of the transaction based of the new inserted remain.
+    if a transaction new remain become negative, the operation will fail and all the changes will be rolled back*/
+    fun resetNextRowsRemain(date: Long, remainInput: Long, cardID: Int): Boolean {
         val cursor: Cursor
-
         var newRemain = remainInput
-        val query = "SELECT $COLUMN_REMAIN, $COLUMN_TYPE, $COLUMN_ID FROM $TRANSACTION_TABLE WHERE $BANK_ID = $cardID AND $COLUMN_DATE > $date"
-        db = this.writableDatabase
+        val query = "SELECT $COLUMN_CHANGE, $COLUMN_ID FROM $TRANSACTION_TABLE WHERE $BANK_ID = $cardID AND $COLUMN_DATE > $date"
+        val db: SQLiteDatabase = this.writableDatabase
         db.beginTransaction()
         cursor = db.rawQuery(query, null)
         if (cursor.moveToFirst()) {
             do {
-                val remain = cursor.getLong(0)
-                val type = cursor.getInt(1)
-                val id = cursor.getInt(2)
-                newRemain = if (type == 0) newRemain + remain
-                else newRemain - remain
+                val change = cursor.getLong(0)
+                val id = cursor.getInt(1)
+                newRemain += change
                 if (newRemain < 0) {
-                    AlertDialog.Builder(activity).setMessage("Failed").
-                    setMessage("With the custom remain, some of the next transactions became negative!\ncannot do your transaction")
-                        .setPositiveButton("OK") { _, _ -> }.create().show()
                     cursor.close()
                     db.endTransaction()
                     db.close()
@@ -195,4 +198,63 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
         db.close()
         return true
     }
+    /*this function is called when a row is deleted and user checked updating the remain of next transactions.
+    * it won't reset remains, it will update them but still it is forbidden to have negative remain*/
+    fun updateNextRowsRemain(date: Long, changeInput: Long, cardID: Int): Boolean {
+        println("LOG: DELETED CHANGE: $changeInput")
+        val db = this.writableDatabase
+        val query = "SELECT $COLUMN_REMAIN, $COLUMN_ID FROM $TRANSACTION_TABLE WHERE $BANK_ID = $cardID AND $COLUMN_DATE > $date"
+        db.beginTransaction()
+        val cursor = db.rawQuery(query, null)
+        if (cursor.moveToFirst()) {
+            do {
+                val remain = cursor.getLong(0)
+                println("LOG: old remain: $remain")
+                val id = cursor.getInt(1)
+                println("LOG: WTF!: $changeInput")
+                val newRemain = remain - changeInput
+                println("LOG: new remain: $newRemain")
+                if (newRemain < 0) {
+                    cursor.close()
+                    db.endTransaction()
+                    db.close()
+                    return false
+                }
+                val updateQuery = "UPDATE $TRANSACTION_TABLE SET $COLUMN_REMAIN = $newRemain WHERE $COLUMN_ID = $id"
+                db.execSQL(updateQuery)
+            } while (cursor.moveToNext())
+            db.setTransactionSuccessful()
+        }
+        cursor.close()
+        db.endTransaction()
+        db.close()
+        return true
+    }
+
+    //this function will delete all of the given card transactions
+    fun deleteAllCardTransactions(bankID: Int) {
+        val query = "DELETE FROM $TRANSACTION_TABLE WHERE $BANK_ID = $bankID"
+        val db = this.writableDatabase
+        db.execSQL(query)
+        db.close()
+    }
+
+    fun getCount(): Int {
+        val query = "SELECT $COLUMN_ID FROM $TRANSACTION_TABLE"
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(query, null)
+        val count = cursor.count
+        cursor.close()
+        db.close()
+        return count
+    }
+
+    //will simply delete a transaction
+    fun deleteTransaction(id: Int): Boolean {
+        val db = this.writableDatabase
+        val out = db.delete(TRANSACTION_TABLE, "$COLUMN_ID = $id", null)
+        db.close()
+        return out > 0
+    }
+
 }

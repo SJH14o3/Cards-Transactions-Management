@@ -235,9 +235,11 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
                         .setTitle("Warning").setIcon(R.drawable.ic_alert)
                         .setNegativeButton("Cancel") { dialog, _ ->
                             dialog.dismiss()
-                        } //TODO: delete all transactions associated with the deleted card
+                        }
                         .setPositiveButton("Delete") { dialog, _ ->
                             Statics.getCardDatabase().deleteCard(card.getId())
+                            //all of the card transactions will be deleted
+                            Statics.getTransactionDatabase().deleteAllCardTransactions(card.getId())
                             activity.refreshCards()
                             dialog.dismiss()
                             Snackbar.make(activity.window.decorView.findViewById(R.id.coordinate_layout), "Card was deleted", Snackbar.LENGTH_INDEFINITE).setAction("OK", View.OnClickListener {
