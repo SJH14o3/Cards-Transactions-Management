@@ -242,8 +242,9 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
                             Statics.getTransactionDatabase().deleteAllCardTransactions(card.getId())
                             activity.refreshCards()
                             dialog.dismiss()
-                            Snackbar.make(activity.window.decorView.findViewById(R.id.coordinate_layout), "Card was deleted", Snackbar.LENGTH_INDEFINITE).setAction("OK", View.OnClickListener {
-                            }).show()
+                            Snackbar.make(activity.window.decorView.findViewById(R.id.coordinate_layout), "Card was deleted", Snackbar.LENGTH_INDEFINITE).setAction("OK"
+                            ) {
+                            }.show()
                         }.setMessage("Do you want to delete ${card.getTitle()}?\nAll of the information" +
                                 "including transactions of the card will be lost forever")
                     val dialog: AlertDialog = builder.create()

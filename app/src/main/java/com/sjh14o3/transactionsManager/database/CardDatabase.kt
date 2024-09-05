@@ -9,14 +9,14 @@ import com.sjh14o3.transactionsManager.data.DebitCard
 class CardDatabase(context: Context):  SQLiteOpenHelper(context, "cards.db", null , 1){
     companion object {
         //statics values for table name and columns
-        val CARDS_TABLE = "CARDS_TABLE"
-        val COLUMN_ID = "ID"
-        val COLUMN_TITLE = "TITLE"
-        val COLUMN_CARD_NUMBER = "CARD_NUMBER"
-        val COLUMN_SHABA = "SHABA_NUMBER"
-        val COLUMN_EXPIRY_MONTH = "EXPIRY_MONTH"
-        val COLUMN_EXPIRY_YEAR = "EXPIRY_YEAR"
-        val COLUMN_OWNER_NAME = "EXPIRY_OWNER_NAME"
+        const val CARDS_TABLE = "CARDS_TABLE"
+        const val COLUMN_ID = "ID"
+        const val COLUMN_TITLE = "TITLE"
+        const val COLUMN_CARD_NUMBER = "CARD_NUMBER"
+        const val COLUMN_SHABA = "SHABA_NUMBER"
+        const val COLUMN_EXPIRY_MONTH = "EXPIRY_MONTH"
+        const val COLUMN_EXPIRY_YEAR = "EXPIRY_YEAR"
+        const val COLUMN_OWNER_NAME = "EXPIRY_OWNER_NAME"
     }
     //when database doesn't exist, it will be created
     override fun onCreate(p0: SQLiteDatabase?) {
@@ -31,7 +31,7 @@ class CardDatabase(context: Context):  SQLiteOpenHelper(context, "cards.db", nul
     }
     //return all of the cards
     fun getAll(): Array<DebitCard> {
-        var out: ArrayList<DebitCard>
+        val out: ArrayList<DebitCard>
         val sql = "SELECT * FROM $CARDS_TABLE"
         val db = this.readableDatabase
         val cursor = db.rawQuery(sql, null)

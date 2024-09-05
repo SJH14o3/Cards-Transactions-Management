@@ -131,6 +131,33 @@
                     android:layout_toEndOf="@id/text_spent_lit"
                     tools:ignore="HardcodedText" />
             </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/spent_banner"
+                android:layout_marginTop="5dp"
+                android:id="@+id/balance_banner">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="balance:"
+                    android:textSize="25sp"
+                    android:id="@+id/text_balance_lit"
+                    />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0T"
+                    android:textColor="@color/disabled_background"
+                    android:textSize="25sp"
+                    android:layout_marginStart="10dp"
+                    android:id="@+id/text_balance"
+                    android:layout_toEndOf="@id/text_balance_lit"
+                    tools:ignore="HardcodedText" />
+            </RelativeLayout>
+
 
             <Button
                 android:layout_width="wrap_content"
@@ -139,8 +166,8 @@
                 android:backgroundTint="@color/lavender"
                 android:textColor="@color/text_fill_on_lavender"
                 android:id="@+id/select_interval"
-                android:layout_below="@id/spent_banner"
-                android:layout_margin="20dp"
+                android:layout_below="@id/balance_banner"
+                android:layout_margin="10dp"
                 android:layout_centerHorizontal="true"/>
 
             <TextView

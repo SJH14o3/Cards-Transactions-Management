@@ -41,9 +41,9 @@ class DebitCard: Serializable {
         checkExpired()
     }
 
-    fun isExpired(): Boolean {
+    /*fun isExpired(): Boolean {
         return isExpired
-    }
+    }*/
 
     fun getId(): Int {
         return id

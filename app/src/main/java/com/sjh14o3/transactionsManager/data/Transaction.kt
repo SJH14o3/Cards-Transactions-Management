@@ -249,8 +249,6 @@ class Transaction: Serializable {
             }
             val formattedMonth = if (month < 10) "0$month" else month.toString()
             val limit = "${year}${formattedMonth}${time.substring(6)}".toLong()
-            println("MYLOG: LIMIT = $limit")
-            println("MYLOG: current = ${Statics.getExactTime()}")
             return limit > Statics.getExactTime()
         }
     }

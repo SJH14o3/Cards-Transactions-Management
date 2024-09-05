@@ -23,6 +23,7 @@ class ReportActivity : AppCompatActivity() {
     private lateinit var range: TextView
     private lateinit var income: TextView
     private lateinit var spent: TextView
+    private lateinit var balance: TextView
     private lateinit var rangePicker: Button
     private lateinit var rangeHeadsUp: TextView
     private lateinit var listView: ListView
@@ -82,7 +83,6 @@ class ReportActivity : AppCompatActivity() {
             rangeHeadsUp.visibility = View.GONE
             return
         }
-        println("MYLOG: length = {${transactions.size}}")
         var income = 0L
         var spent = 0L
         val splitCategories = LongArray(Transaction.CATEGORIES_COUNT + 1) { 0 }
@@ -101,6 +101,17 @@ class ReportActivity : AppCompatActivity() {
         }
         this.income.text = "+${Transaction.getSeparatedDigits(income)}T"
         this.spent.text = "${Transaction.getSeparatedDigits(spent)}T"
+        val balance = income + spent
+        if (balance > 0) {
+            this.balance.text = "+${Transaction.getSeparatedDigits(balance)}T"
+            this.balance.setTextColor(resources.getColor(R.color.income_text))
+        } else if (balance < 0) {
+            this.balance.text = "${Transaction.getSeparatedDigits(balance)}T"
+            this.balance.setTextColor(resources.getColor(R.color.spent_text))
+        } else {
+            this.balance.text = "0.0T"
+            this.balance.setTextColor(resources.getColor(R.color.disabled_background))
+        }
         val arrayList = ArrayList<String>()
         for (i in splitCategories.indices) {
             if (splitCategories[i] == 0L) { //if there was no spent on a category, that won't show up
@@ -133,6 +144,7 @@ class ReportActivity : AppCompatActivity() {
         range = findViewById(R.id.range)
         income = findViewById(R.id.text_income)
         spent = findViewById(R.id.text_spent)
+        balance = findViewById(R.id.text_balance)
         rangePicker = findViewById(R.id.select_interval)
         rangeHeadsUp = findViewById(R.id.select_range_heads_up)
         listView = findViewById(R.id.list_view)

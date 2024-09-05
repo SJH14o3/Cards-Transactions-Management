@@ -136,7 +136,7 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
                         .setNegativeButton("Cancel") { dialog, _ ->
                             dialog.dismiss()
                         }
-                        .setPositiveButton("Delete") { dialog, _ ->
+                        .setPositiveButton("Delete") { _, _ ->
                             deleteShowAskForUpdateRowsTransaction(transaction)
                         }.setMessage("This Transaction Will be deleted for ever!")
                         .create().show()
@@ -155,7 +155,7 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
                         "Do you want to automatically change remain of next transactions?" +
                         "be aware that if during modifying next transactions, if a transaction remain" +
                         "become negative, this will failed and you have to change them manually")
-                .setPositiveButton("Update") { dialog, _ ->
+                .setPositiveButton("Update") { _, _ ->
                     if (Statics.getTransactionDatabase().updateNextRowsRemain(transaction.getDateAndTimeAsLong(),
                             transaction.getChange(), cardID)) {
                         Statics.getTransactionDatabase().deleteTransaction(transaction.getId())

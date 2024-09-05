@@ -153,6 +153,7 @@ class TransactionModifyActivity : AppCompatActivity() {
     }
 
     //after category was selected, image view will show that category
+    @SuppressLint("UseCompatLoadingForDrawables")
     private fun changeCategoryIcon(categoryStr: String) {
         val res = Statics.getApplicationContext().resources
         val iconName = when(categoryStr) {
@@ -173,9 +174,9 @@ class TransactionModifyActivity : AppCompatActivity() {
             .setTitle("Warning").setMessage("Custom Remain may result in inaccuracy.\n" +
                     "Next transactions remain will be calculated from this transaction remain (meaning it would reset remain kinda like this is the first transaction)\n" +
                     "If you are adding multiple transactions at once, we suggest adding transactions in order to prevent some complications")
-            .setNegativeButton("Cancel") { dialog, _ ->
+            .setNegativeButton("Cancel") { _, _ ->
                 remainCheck.isChecked = false
-            }.setPositiveButton("Acknowledge") { dialog, _ ->
+            }.setPositiveButton("Acknowledge") { _, _ ->
                 remainWarningBroughtUp = true
             }.setOnDismissListener {
                 if (!remainWarningBroughtUp) {
@@ -246,14 +247,14 @@ class TransactionModifyActivity : AppCompatActivity() {
 
     //when user is typing change, remain will change dynamically
     private fun autoSetRemain() {
-        var newRemain = 0L
+        val newRemain: Long
         if (inputChange.text.toString().isEmpty()) {
             inputRemain.setText("")
             return
         }
-        if (radioButtonSpend.isChecked) {
-            newRemain = lastRemain - inputChange.text.toString().toLong()
-        } else newRemain = lastRemain + inputChange.text.toString().toLong()
+        newRemain = if (radioButtonSpend.isChecked) {
+            lastRemain - inputChange.text.toString().toLong()
+        } else lastRemain + inputChange.text.toString().toLong()
         if (!notLastTransaction) {
             inputRemain.setText(newRemain.toString())
         } else {
@@ -497,9 +498,9 @@ class TransactionModifyActivity : AppCompatActivity() {
                     if (current < lastTransactionTime) { //this is not the last transaction
                         AlertDialog.Builder(this).setTitle("Update remain for next transactions?")
                             .setMessage("Since this is not the last transaction, do you want to update remain on next transactions?")
-                            .setPositiveButton("Yes") { dialog, _ ->
+                            .setPositiveButton("Yes") { _, _ ->
                                 addAndUpdateTransactions()
-                            }.setNegativeButton("No") { dialog, _ ->
+                            }.setNegativeButton("No") { _, _ ->
                                 addTransaction()
                             }.setCancelable(false).create().show()
                     } else {
@@ -534,7 +535,7 @@ class TransactionModifyActivity : AppCompatActivity() {
                             AlertDialog.Builder(this)
                                 .setTitle("Update remain for next transactions?")
                                 .setMessage("Since this is not the last transaction, do you want to update remain on next transactions?")
-                                .setPositiveButton("Yes") { dialog, _ ->
+                                .setPositiveButton("Yes") { _, _ ->
                                     if (Statics.getTransactionDatabase().resetNextRowsRemain(transaction.getDateAndTimeAsLong(), new.getRemain(), transaction.getBankId())) {
                                         Statics.getTransactionDatabase().updateRowComplex(transaction.getId(), editCategory, editNote, editChange, editRemain, false, new)
                                         simpleChange = false
@@ -546,7 +547,7 @@ class TransactionModifyActivity : AppCompatActivity() {
                                                 " try editing again but don't update the next rows and fix the remains manually.")
                                             .setPositiveButton("OK") { _, _ -> }.create().show()
                                     }
-                                }.setNegativeButton("No") { dialog, _ ->
+                                }.setNegativeButton("No") { _, _ ->
                                     simpleChange = true
                                     Statics.getTransactionDatabase().updateRowComplex(transaction.getId(), editCategory, editNote, editChange, editRemain, false, new)
                                     showSuccessDialog("Edited")
@@ -567,7 +568,7 @@ class TransactionModifyActivity : AppCompatActivity() {
                                 .setMessage("Since you are changing time of transaction, it is not possible to" +
                                         " automatically update remain, either continue without updating, or" +
                                         "delete this transaction and insert the correct time.")
-                                .setPositiveButton("Edit without update") { dialog, _ ->
+                                .setPositiveButton("Edit without update") { _, _ ->
                                     simpleChange = true
                                     Statics.getTransactionDatabase().updateRowComplex(transaction.getId(), editCategory, editNote, editChange, editRemain, false, new)
                                     showSuccessDialog("Edited")

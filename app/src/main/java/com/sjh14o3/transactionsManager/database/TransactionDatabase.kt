@@ -30,10 +30,6 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
         TODO("Not yet implemented")
     }
 
-    fun makeFormattedDate(year:Int, formattedMonth: Int, formattedDay: Int): Long {
-        return "$year${formattedMonth}${formattedDay}0000".toLong()
-    }
-
     //with inserted two ranges, all transaction between that time will be returned
     fun getCardAllTransactionsCustomRange(cardID: Int, start: Long, end: Long, dummyTransactions: Int): Array<Transaction> {
         val out: ArrayList<Transaction>
@@ -47,7 +43,7 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
     }
 
     //this function will receive all transactions from all cards in the selected range
-    fun getAllCardsTransactions(start: Long, end: Long, dummyTransactions: Int): Array<Transaction> {
+    /*fun getAllCardsTransactions(start: Long, end: Long, dummyTransactions: Int): Array<Transaction> {
         val out: ArrayList<Transaction>
         val sql =
             "SELECT * FROM $TRANSACTION_TABLE WHERE $COLUMN_DATE >= $start AND $COLUMN_DATE < $end"
@@ -57,7 +53,7 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
         db.close()
         cursor.close()
         return out.toTypedArray()
-    }
+    }*/
 
     //since last functions where similar, this function is here
     private fun duplicateGetAll(cursor: Cursor, cardID: Int, dummyTransactions: Int): ArrayList<Transaction> {
@@ -105,14 +101,12 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
 
     //will return remain of the card
     fun getLastRemain(bankID: Int): Long {
-        val out: Long
         val query = "SELECT $COLUMN_REMAIN FROM $TRANSACTION_TABLE WHERE $BANK_ID = $bankID ORDER BY $COLUMN_DATE DESC LIMIT 1"
         return getLastRemainDuplicate(query)
     }
 
     //will return remain of the card but before the inserted time
     fun getLastRemainBeforeTime(cardId: Int, time: Long): Long {
-        val out: Long
         val query = "SELECT $COLUMN_REMAIN FROM $TRANSACTION_TABLE WHERE $BANK_ID = $cardId AND $COLUMN_DATE < $time ORDER BY $COLUMN_DATE DESC LIMIT 1"
         return getLastRemainDuplicate(query)
     }
@@ -233,7 +227,7 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
         db.close()
     }
 
-    fun getCount(): Int {
+    /*fun getCount(): Int {
         val query = "SELECT $COLUMN_ID FROM $TRANSACTION_TABLE"
         val db = this.readableDatabase
         val cursor = db.rawQuery(query, null)
@@ -241,7 +235,7 @@ class TransactionDatabase(context: Context):  SQLiteOpenHelper(context, "transac
         cursor.close()
         db.close()
         return count
-    }
+    }*/
 
     //will simply delete a transaction
     fun deleteTransaction(id: Int): Boolean {

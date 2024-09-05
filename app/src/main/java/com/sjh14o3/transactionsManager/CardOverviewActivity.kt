@@ -27,11 +27,11 @@ import java.util.Calendar
 class CardOverviewActivity : AppCompatActivity() {
     companion object {
         //this values will be sent to adding or editing an transaction
-        val ADD_TRANSACTION_REQUEST_CODE = 1
-        val EDIT_TRANSACTION_REQUEST_CODE = 2
+        const val ADD_TRANSACTION_REQUEST_CODE = 1
+        const val EDIT_TRANSACTION_REQUEST_CODE = 2
 
-        val SIMPLE_TRANSACTION_EDIT_SUCCESS = 10 //edit only note or category of a transaction
-        val SEMI_COMPLEX_TRANSACTION_EDIT_SUCCESS = 20 //edit change or remain of a transaction (basically a reset of remain)
+        const val SIMPLE_TRANSACTION_EDIT_SUCCESS = 10 //edit only note or category of a transaction
+        const val SEMI_COMPLEX_TRANSACTION_EDIT_SUCCESS = 20 //edit change or remain of a transaction (basically a reset of remain)
 
         //this is used for converting start and end of selected custom interval range
         fun convertTimeToDate(time: Long): String {
