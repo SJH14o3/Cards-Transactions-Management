@@ -25,12 +25,24 @@ import java.util.Calendar
 
 //this activity will show a calendar and by default all of the transactions in this months ordered by newest
 class CardOverviewActivity : AppCompatActivity() {
-    //this values will be sent to adding or editing an transaction
-    private val ADD_TRANSACTION_REQUEST_CODE = 1
-    private val EDIT_TRANSACTION_REQUEST_CODE = 2
+    companion object {
+        //this values will be sent to adding or editing an transaction
+        val ADD_TRANSACTION_REQUEST_CODE = 1
+        val EDIT_TRANSACTION_REQUEST_CODE = 2
+
+        val SIMPLE_TRANSACTION_EDIT_SUCCESS = 10 //edit only note or category of a transaction
+        val SEMI_COMPLEX_TRANSACTION_EDIT_SUCCESS = 20 //edit change or remain of a transaction (basically a reset of remain)
+
+        //this is used for converting start and end of selected custom interval range
+        fun convertTimeToDate(time: Long): String {
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = time
+            return SimpleDateFormat("yyyyMMdd").format(calendar.time)
+        }
+    }
 
     private lateinit var calendar: CalendarView
-    private lateinit var thisMonth: Button
+    private lateinit var reportButton: Button
     private lateinit var addTransaction: Button
     private lateinit var selectInterval: Button
     private lateinit var selectMonth: Button
@@ -58,10 +70,10 @@ class CardOverviewActivity : AppCompatActivity() {
         val cardNumber = intent.getSerializableExtra("CardNumber") as String //to set two fancy image on top, this is needed
         injectComponents(cardNumber)
         //by default, transactions of current IRL months will shown
-        transactions = Statics.getTransactionDatabase().getCardAllTransactionsThisMonth(cardID)
+        getCurrentMonthTransactions()
         refreshWholeData()
         setCalendarRange()
-        setListeners()
+        setListeners(cardNumber)
         val formatted = SimpleDateFormat("yyyyMMdd")
         //selected date is used for "Select This Month" button, this is actually to prevent a crash,
         // since if this is empty and button is pressed app will crash
@@ -71,17 +83,13 @@ class CardOverviewActivity : AppCompatActivity() {
     private fun setTransactionsRange(start: Long, end: Long) {
         currentStart = start
         currentEnd = end
-        transactions = Statics.getTransactionDatabase().getCardAllTransactionsCustomRange(cardID ,start, end)
+        transactions = Statics.getTransactionDatabase().getCardAllTransactionsCustomRange(cardID ,start, end, 2)
         refreshWholeData()
     }
 
     //to be able to refresh items from adaptor, this public function is here
     fun refreshFromAdaptor() {
-        transactions = if (currentEnd == -1L) {
-            Statics.getTransactionDatabase().getCardAllTransactionsThisMonth(cardID)
-        } else {
-            Statics.getTransactionDatabase().getCardAllTransactionsCustomRange(cardID, currentStart, currentEnd)
-        }
+        transactions = Statics.getTransactionDatabase().getCardAllTransactionsCustomRange(cardID, currentStart, currentEnd, 2)
         refreshWholeData()
         setCalendarRange()
     }
@@ -97,8 +105,6 @@ class CardOverviewActivity : AppCompatActivity() {
         } else Toast.makeText(this, "If calendar is bugged, reopen this page", Toast.LENGTH_LONG).show()
         //to set minimum date the calendar shows, time of the first transaction will be extracted
         val first = Statics.getTransactionDatabase().getFirstDateAndTime(cardID).toString()
-        println("Calendar current min date = ${calendar.minDate}")
-        println("LOG: FIRST TRANSACTION: $first")
         calendar.maxDate = System.currentTimeMillis() - 1000 //max date is today by default
         if (first == "0") { //if no transaction exist for that card, first is 0, so the only selectable date is today
             calendar.minDate = System.currentTimeMillis() - 2000
@@ -121,20 +127,33 @@ class CardOverviewActivity : AppCompatActivity() {
         *  in the middle of the recycler view], it is the same*/
         if (requestCode == ADD_TRANSACTION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             Toast.makeText(this, "Displaying current month transactions", Toast.LENGTH_LONG).show()
-            transactions = Statics.getTransactionDatabase().getCardAllTransactionsThisMonth(cardID)
+            getCurrentMonthTransactions()
             refreshWholeData()
         //if adding a new transaction was successful but there transaction after this and user also commanded to change next transaction remain
         } else if (requestCode == ADD_TRANSACTION_REQUEST_CODE && resultCode == -10) {
             Toast.makeText(this, "Displaying current month transactions", Toast.LENGTH_LONG).show()
-            transactions = Statics.getTransactionDatabase().getCardAllTransactionsThisMonth(cardID)
+            getCurrentMonthTransactions()
+            refreshWholeData()
+        } else if (requestCode == EDIT_TRANSACTION_REQUEST_CODE && resultCode == SIMPLE_TRANSACTION_EDIT_SUCCESS) {
+            adaptor.updateRow()
+        } else if (requestCode == EDIT_TRANSACTION_REQUEST_CODE && resultCode == SEMI_COMPLEX_TRANSACTION_EDIT_SUCCESS) {
+            Toast.makeText(this, "Displaying current month transactions", Toast.LENGTH_LONG).show()
+            getCurrentMonthTransactions()
             refreshWholeData()
         }
         setCalendarRange()
     }
 
+    private fun getCurrentMonthTransactions() {
+        val today= MyDate(Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH) + 1, 0)
+        currentStart = "${today.getYear()}${today.getMonthFormatted()}000000".toLong()
+        currentEnd = "${today.getYear()}${today.getMonthFormatted()}990000".toLong()
+        transactions = Statics.getTransactionDatabase().getCardAllTransactionsCustomRange(cardID,currentStart, currentEnd, 2)
+    }
+
     private fun injectComponents(cardNumber: String) {
         calendar = findViewById(R.id.calendar)
-        thisMonth = findViewById(R.id.month_report)
+        reportButton = findViewById(R.id.month_report)
         addTransaction = findViewById(R.id.add_transaction)
         selectInterval = findViewById(R.id.interval)
         selectMonth = findViewById(R.id.monthly_overall)
@@ -164,11 +183,11 @@ class CardOverviewActivity : AppCompatActivity() {
             recyclerView.visibility = View.VISIBLE
         }
         val remain = Statics.getTransactionDatabase().getLastRemain(cardID)
-        remainText.text = "Remain: ${Transaction.getSeparatedDigits(remain)}"
+        remainText.text = "Remain: ${Transaction.getSeparatedDigits(remain)}T"
     }
 
     @SuppressLint("SimpleDateFormat")
-    private fun setListeners() {
+    private fun setListeners(cardNumber: String) {
         calendar.setOnDateChangeListener { _, year, month, dayOfMonth ->
             val date = MyDate(year, month+1, dayOfMonth-1)
             val date2 = MyDate(year, month+1, dayOfMonth)
@@ -180,6 +199,8 @@ class CardOverviewActivity : AppCompatActivity() {
         addTransaction.setOnClickListener {
             val intent = Intent(this, TransactionModifyActivity::class.java)
             intent.putExtra("CardID", cardID)
+            intent.putExtra("EDIT", false)
+            intent.putExtra("Date", selectedDate) //current date selected on calendar will be sent to automatically set date
             startActivityForResult(intent, ADD_TRANSACTION_REQUEST_CODE)
         }
         selectMonth.setOnClickListener {
@@ -200,12 +221,14 @@ class CardOverviewActivity : AppCompatActivity() {
                 picker.dismiss()
             }
         }
-    }
-
-    //this is used for converting start and end of selected custom interval range
-    private fun convertTimeToDate(time: Long): String {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = time
-        return SimpleDateFormat("yyyyMMdd").format(calendar.time)
+        //bring up report activity
+        reportButton.setOnClickListener {
+            val intent = Intent(this, ReportActivity::class.java)
+            intent.putExtra("CardID", cardID)
+            intent.putExtra("CardNumber", cardNumber)
+            intent.putExtra("Start", currentStart)
+            intent.putExtra("End", currentEnd)
+            startActivityForResult(intent, ADD_TRANSACTION_REQUEST_CODE)
+        }
     }
 }

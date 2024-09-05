@@ -21,6 +21,7 @@ import com.sjh14o3.transactionsManager.data.Transaction
 //transactions recycler views adaptor
 class TransactionsAdaptor(private var transactions: Array<Transaction>, private val context: Context,
                           private val activity: CardOverviewActivity, private val cardID: Int): RecyclerView.Adapter<TransactionsAdaptor.ViewHolder>() {
+      private var changedRow = -1
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var parent: CardView = itemView.findViewById(R.id.transaction_card_parent)
@@ -61,17 +62,17 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
         Transaction.setIconType(transaction.getType(), holder.categoryIcon)
         //income will be shown green, but spend will be shown red
         if (transaction.getChange() > 0) {
-            holder.change.text = "+" + Transaction.getSeparatedDigits(transaction.getChange())
+            holder.change.text = "+" + Transaction.getSeparatedDigits(transaction.getChange()) + "T"
             holder.change.setTextColor(context.resources.getColor(R.color.income_text))
         } else {
-            holder.change.text = Transaction.getSeparatedDigits(transaction.getChange())
+            holder.change.text = Transaction.getSeparatedDigits(transaction.getChange()) + "T"
             holder.change.setTextColor(context.resources.getColor(R.color.spent_text))
         }
         val note = transaction.getNote()
         holder.note.text = note.ifEmpty {
             "No Note was Provided"
         }
-        holder.remain.text = "Remain: ${Transaction.getSeparatedDigits(transaction.getRemain())}"
+        holder.remain.text = "Remain: ${Transaction.getSeparatedDigits(transaction.getRemain())}T"
         //cards can be expanded to show note and remain in two ways. expanded card will be minimized if trigger is pressed again
         holder.viewButton.setOnClickListener {  //one:clicking expand button
             toggleMoreInformation(holder.dynamicLayout, holder.viewButton)
@@ -81,19 +82,9 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
         }
 
         holder.moreButton.setOnClickListener {
-            showTransactionMore(holder, transaction)
+            showTransactionMore(holder, transaction, position)
         }
-        var year = transaction.getDateAndTimeAsLong().toString().substring(0,4).toInt()
-        var month = transaction.getDateAndTimeAsLong().toString().substring(4,6).toInt() + 3
-        if (month > 12) {
-            month -= 12
-            year += 1
-        }
-        val formattedMonth = if (month < 10) "0$month" else month.toString()
-        val limit = "${year}${formattedMonth}${transaction.getDateAndTimeAsLong().toString().substring(6)}".toLong()
-        if (limit < Statics.getExactTime()) {
-            holder.canBeModified = false
-        }
+        holder.canBeModified = Transaction.allowedForMoreOperations(transaction.getDateAndTimeAsLong().toString())
     }
     //expand the minimized card, minimize the expanded card
     private fun toggleMoreInformation(layout: ConstraintLayout, button: ImageButton) {
@@ -108,7 +99,7 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
     }
 
     //when more button on a transaction card is clicked, it will show a pop up menu
-    private fun showTransactionMore(holder: ViewHolder, transaction: Transaction) {
+    private fun showTransactionMore(holder: ViewHolder, transaction: Transaction, position: Int) {
         val moreMenu = PopupMenu(context, holder.moreButton)
         if (holder.canBeModified) {
             moreMenu.menuInflater.inflate(R.menu.transaction_more, moreMenu.menu)
@@ -117,9 +108,14 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
             moreMenu.menuInflater.inflate(R.menu.transaction_one_option, moreMenu.menu)
         }
         moreMenu.setOnMenuItemClickListener { item ->
+            changedRow = position
             when(item.title) {
                 "Edit" -> {
-                    println(transaction)
+                    val intent = Intent(activity, TransactionModifyActivity::class.java)
+                    intent.putExtra("CardID", cardID)
+                    intent.putExtra("EDIT", true)
+                    intent.putExtra("transaction", transaction)
+                    activity.startActivityForResult(intent, CardOverviewActivity.EDIT_TRANSACTION_REQUEST_CODE)
                 }
                 "Share" -> {
                     val sendIntent: Intent = Intent().apply {
@@ -167,8 +163,8 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
                         activity.refreshFromAdaptor()
                     } else {
                         AlertDialog.Builder(activity).setMessage("Failed").
-                        setMessage("With the custom remain, some of the next transactions became negative!" +
-                                " try deleting again but don't update the next rows and fix the remain manually.")
+                        setMessage("With the deletion, some of the next transactions became negative!" +
+                                " try deleting again but don't update the next rows and fix the remains manually.")
                             .setPositiveButton("OK") { _, _ -> }.create().show()
                     }
                 }.setNegativeButton("Don't Update") { _, _ ->
@@ -182,5 +178,10 @@ class TransactionsAdaptor(private var transactions: Array<Transaction>, private 
             Toast.makeText(activity, "Deletion was successful", Toast.LENGTH_LONG).show()
             activity.refreshFromAdaptor()
         }
+    }
+
+    fun updateRow() {
+        transactions[changedRow] = Statics.getTransactionDatabase().getTransaction(transactions[changedRow].getId())
+        notifyItemChanged(changedRow)
     }
 }

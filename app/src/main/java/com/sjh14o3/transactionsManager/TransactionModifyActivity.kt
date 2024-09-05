@@ -69,6 +69,9 @@ class TransactionModifyActivity : AppCompatActivity() {
     private var lastRemainBefore = -1L
     private var lastTransactionTime = -1L
     private var notLastTransaction = false
+    private var isEditMode = true
+    private lateinit var transaction: Transaction
+    private var simpleChange = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +82,7 @@ class TransactionModifyActivity : AppCompatActivity() {
             insets
         }
         cardID = intent.getSerializableExtra("CardID") as Int
+        isEditMode = intent.getSerializableExtra("EDIT") as Boolean
         injectComponents()
         //to automatically update remain, last remain will be received
         lastRemain = Statics.getTransactionDatabase().getLastRemain(cardID)
@@ -92,6 +96,17 @@ class TransactionModifyActivity : AppCompatActivity() {
                 backPressed()
             }
         })
+        if (isEditMode) {
+            transaction = intent.getSerializableExtra("transaction") as Transaction
+            fillComponents(transaction)
+        } else {
+            val date = intent.getSerializableExtra("Date") as String
+            if (Transaction.allowedForMoreOperations("${date}0000")) {
+                pickedDate = MyDate(date.substring(0,4).toInt(), date.substring(4,6).toInt(), date.substring(6,8).toInt())
+                showerDate.visibility = View.VISIBLE
+                showerDate.text = "${date.substring(0,4)}-${date.substring(4,6)}-${date.substring(6,8)}"
+            }
+        }
     }
     //to prevent accidental back pressing or canceling, this dialog will be shown
     private fun backPressed() {
@@ -157,7 +172,7 @@ class TransactionModifyActivity : AppCompatActivity() {
         builder
             .setTitle("Warning").setMessage("Custom Remain may result in inaccuracy.\n" +
                     "Next transactions remain will be calculated from this transaction remain (meaning it would reset remain kinda like this is the first transaction)\n" +
-                    "If you are adding multiple transactions at once, we suggest adding transactions in order. to prevent some complications")
+                    "If you are adding multiple transactions at once, we suggest adding transactions in order to prevent some complications")
             .setNegativeButton("Cancel") { dialog, _ ->
                 remainCheck.isChecked = false
             }.setPositiveButton("Acknowledge") { dialog, _ ->
@@ -218,10 +233,10 @@ class TransactionModifyActivity : AppCompatActivity() {
         }
         //user can't set a remain where income change is more than remain!
         if (remainCheck.isChecked && radioButtonIncome.isChecked &&
-            inputRemain.text.toString().toLong() < inputChange.toString().toLong()) {
+            inputRemain.text.toString().toLong() < inputChange.text.toString().toLong()) {
             if (!out) sb.append("\n")
             out = false
-            sb.append("-you inserted income and it's more than your inserted remain? NONSENSE!")
+            sb.append("-Inserted income is more than inserted remain? NONSENSE!")
         }
         if (!out) {
             showValidationFailedDialog(sb)
@@ -347,10 +362,18 @@ class TransactionModifyActivity : AppCompatActivity() {
         builder.setTitle("Success").setMessage("Transaction was $mode successfully").setPositiveButton("OK") { dialog, _ ->
             dialog.dismiss()
         }.setOnDismissListener {
-            if (notLastTransaction) {
-                setResult(-10)
+            if (!isEditMode) {
+                if (notLastTransaction) {
+                    setResult(-10)
+                } else {
+                    setResult(Activity.RESULT_OK)
+                }
             } else {
-                setResult(Activity.RESULT_OK)
+                if (simpleChange) {
+                    setResult(CardOverviewActivity.SIMPLE_TRANSACTION_EDIT_SUCCESS)
+                } else {
+                    setResult(CardOverviewActivity.SEMI_COMPLEX_TRANSACTION_EDIT_SUCCESS)
+                }
             }
             finish()
         }.create().show()
@@ -470,16 +493,89 @@ class TransactionModifyActivity : AppCompatActivity() {
             if (result) {
                 val current = ("${pickedDate!!.getYear()}${pickedDate!!.getMonthFormatted()}${pickedDate!!.getDayFormatted()}" +
                         "${pickedTime!!.getHourFormatted()}${pickedTime!!.getMinuteFormatted()}").toLong()
-                if (current < lastTransactionTime) { //this is not the last transaction
-                    AlertDialog.Builder(this).setTitle("Update remain for next transactions?")
-                        .setMessage("Since this is not the last transaction, do you want to update remain on next transactions?")
-                        .setPositiveButton("Yes") { dialog, _ ->
-                            addAndUpdateTransactions()
-                        }.setNegativeButton("No") { dialog, _ ->
-                            addTransaction()
-                        }.setCancelable(false).create().show()
-                } else {
-                    addTransaction()
+                if (!isEditMode) {
+                    if (current < lastTransactionTime) { //this is not the last transaction
+                        AlertDialog.Builder(this).setTitle("Update remain for next transactions?")
+                            .setMessage("Since this is not the last transaction, do you want to update remain on next transactions?")
+                            .setPositiveButton("Yes") { dialog, _ ->
+                                addAndUpdateTransactions()
+                            }.setNegativeButton("No") { dialog, _ ->
+                                addTransaction()
+                            }.setCancelable(false).create().show()
+                    } else {
+                        addTransaction()
+                    }
+                }
+                else {
+                    val new = createTransaction()
+                    val editChange = (transaction.getChange() != new.getChange())
+                    val editTime = (transaction.getDateAndTimeAsLong() != new.getDateAndTimeAsLong())
+                    val editCategory = (transaction.getType() != new.getType())
+                    val editNote = (transaction.getNote() != new.getNote())
+                    val editRemain = (transaction.getRemain() != new.getRemain())
+                    //checking if there was any change
+                    if (!editChange && !editTime && !editCategory && !editNote && !editRemain) {
+                        AlertDialog.Builder(this).setTitle("Failed").setMessage("No Change was detected")
+                            .setPositiveButton("OK") { dialog, _ ->
+                                dialog.dismiss()
+                            }.create().show()
+                    }
+                    //checking if simple things where changed
+                    else if ((editCategory || editNote) && !editChange && !editRemain && !editTime) {
+                        if (Statics.getTransactionDatabase().updateRowSimple(transaction.getId(), editCategory, editNote, new))  {
+                            simpleChange = true
+                            showSuccessDialog("edited")
+                        } else Toast.makeText(this, "Failed, try again later", Toast.LENGTH_LONG).show()
+                    }
+
+                    else if ((editChange || editRemain) && !editTime) {
+                        checkIfLastTransaction()
+                        if (current < lastTransactionTime) {
+                            AlertDialog.Builder(this)
+                                .setTitle("Update remain for next transactions?")
+                                .setMessage("Since this is not the last transaction, do you want to update remain on next transactions?")
+                                .setPositiveButton("Yes") { dialog, _ ->
+                                    if (Statics.getTransactionDatabase().resetNextRowsRemain(transaction.getDateAndTimeAsLong(), new.getRemain(), transaction.getBankId())) {
+                                        Statics.getTransactionDatabase().updateRowComplex(transaction.getId(), editCategory, editNote, editChange, editRemain, false, new)
+                                        simpleChange = false
+                                        showSuccessDialog("edited")
+                                    } else {
+                                        simpleChange = true
+                                        AlertDialog.Builder(this).setMessage("Failed").
+                                        setMessage("During updating rows, some of the next transactions became negative!" +
+                                                " try editing again but don't update the next rows and fix the remains manually.")
+                                            .setPositiveButton("OK") { _, _ -> }.create().show()
+                                    }
+                                }.setNegativeButton("No") { dialog, _ ->
+                                    simpleChange = true
+                                    Statics.getTransactionDatabase().updateRowComplex(transaction.getId(), editCategory, editNote, editChange, editRemain, false, new)
+                                    showSuccessDialog("Edited")
+                                }.setCancelable(false).create().show()
+                        } else {
+                            Statics.getTransactionDatabase().updateRowComplex(transaction.getId(), editCategory, editNote, editChange, editRemain, false, new)
+                        }
+                    } else {
+                        //case where newest card time is edited and still is above other cards
+                        if (!notLastTransaction && (current > Statics.getTransactionDatabase().getSecondLastDateAndTime(cardID))) {
+                            if (Statics.getTransactionDatabase().updateRowComplex(transaction.getId(), editCategory, editNote, editChange, editRemain, true, new)) {
+                                showSuccessDialog("Success")
+                                simpleChange = true
+                            } else Toast.makeText(this, "Failed, Try again later", Toast.LENGTH_LONG).show()
+                        } else {
+                            AlertDialog.Builder(this)
+                                .setTitle("NOTICE")
+                                .setMessage("Since you are changing time of transaction, it is not possible to" +
+                                        " automatically update remain, either continue without updating, or" +
+                                        "delete this transaction and insert the correct time.")
+                                .setPositiveButton("Edit without update") { dialog, _ ->
+                                    simpleChange = true
+                                    Statics.getTransactionDatabase().updateRowComplex(transaction.getId(), editCategory, editNote, editChange, editRemain, false, new)
+                                    showSuccessDialog("Edited")
+                                }.setNegativeButton("Cancel") { dialog, _ ->
+                                    dialog.dismiss()
+                                }.create().show()
+                        }
+                    }
                 }
             }
         }
@@ -552,5 +648,29 @@ class TransactionModifyActivity : AppCompatActivity() {
             view.text = "${Transaction.getSeparatedDigits(input.toLong())}T"
         }
     }
-    //TODO:warn user if there is a transaction after new one and auto change of remain for this scenario and editing scenario
+    //during edit mode, all of the input components will automatically filled with the transaction to be edited
+    private fun fillComponents(transaction: Transaction) {
+        val change = transaction.getChange()
+        if (change > 0) {
+            inputChange.setText(change.toString())
+            radioButtonIncome.isChecked = true
+        } else {
+            inputChange.setText((change * -1).toString())
+            category = transaction.getType()
+            Transaction.setIconType(transaction.getType(), categoryIcon)
+        }
+        val time = transaction.getDateAndTimeAsLong().toString()
+        pickedDate = MyDate(time.substring(0,4).toInt(), time.substring(4,6).toInt(), time.substring(6,8).toInt())
+        pickedTime = MyTime(time.substring(8,10).toInt(), time.substring(10).toInt())
+        showerDate.visibility = View.VISIBLE
+        showerDate.text = "${time.substring(0,4)}-${time.substring(4,6)}-${time.substring(6,8)}"
+        showerTime.visibility = View.VISIBLE
+        showerTime.text = "${time.substring(8,10)}:${time.substring(10,12)}"
+        inputNotes.setText(transaction.getNote())
+        inputRemain.setText(transaction.getRemain().toString())
+        checkIfLastTransaction()
+        if (!notLastTransaction) {
+            lastRemain = transaction.getRemain() - transaction.getChange()
+        }
+    }
 }

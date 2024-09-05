@@ -97,7 +97,7 @@
                 android:id="@+id/month_report"
                 android:layout_width="170dp"
                 android:layout_height="wrap_content"
-                android:text="@string/this_month_report"
+                android:text="@string/selected_range_report"
                 android:backgroundTint="@color/lavender"
                 android:textColor="@color/text_fill_on_lavender"
                 tools:ignore="MissingConstraints"/>

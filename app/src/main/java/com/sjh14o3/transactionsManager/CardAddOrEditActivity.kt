@@ -426,7 +426,6 @@ class CardAddOrEditActivity : AppCompatActivity() {
     }
     //a function to determine if a string is only consist of determined amount of digits using a simple regex
     private fun validateDigits(input: String, digits: Int): Boolean {
-        println("\\d{${digits}")
         val pattern = Regex("\\d{${digits}}")
         return pattern.matches(input)
     }

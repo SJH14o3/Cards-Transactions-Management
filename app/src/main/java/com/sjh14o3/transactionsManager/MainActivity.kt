@@ -1,5 +1,6 @@
 package com.sjh14o3.transactionsManager
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Toast
@@ -79,7 +80,11 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
     //TODO: add functionality to all menu drawer buttons
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.nav_all_cards -> Toast.makeText(applicationContext, "Overall Report", Toast.LENGTH_SHORT).show()
+            R.id.nav_all_cards -> {
+                val intent = Intent(this, ReportActivity::class.java)
+                intent.putExtra("CardID", 0)
+                startActivity(intent)
+            }
             R.id.nav_settings -> Toast.makeText(applicationContext, "Settings", Toast.LENGTH_SHORT).show()
             R.id.nav_accesses -> Toast.makeText(applicationContext, "Accesses", Toast.LENGTH_SHORT).show()
             R.id.nav_add_card -> {

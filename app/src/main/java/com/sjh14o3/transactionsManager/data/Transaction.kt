@@ -123,6 +123,7 @@ class Transaction: Serializable {
     }
 
     companion object {
+        const val CATEGORIES_COUNT = 14
         //integer to month
         fun convertToMonth(number: Int): String {
             return when(number) {
@@ -238,6 +239,19 @@ class Transaction: Serializable {
         fun createDummyTransaction(): Transaction {
             return Transaction("","",0,0,"",20, 0)
         }
-
+        //if a transaction is more than 3 months old, it cannot be deleted or edited.
+        fun allowedForMoreOperations(time: String): Boolean {
+            var year = time.substring(0,4).toInt()
+            var month = time.substring(4,6).toInt() + 3
+            if (month > 12) {
+                month -= 12
+                year += 1
+            }
+            val formattedMonth = if (month < 10) "0$month" else month.toString()
+            val limit = "${year}${formattedMonth}${time.substring(6)}".toLong()
+            println("MYLOG: LIMIT = $limit")
+            println("MYLOG: current = ${Statics.getExactTime()}")
+            return limit > Statics.getExactTime()
+        }
     }
 }
