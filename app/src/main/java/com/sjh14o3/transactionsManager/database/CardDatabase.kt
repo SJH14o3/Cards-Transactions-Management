@@ -41,7 +41,12 @@ class CardDatabase(context: Context):  SQLiteOpenHelper(context, "cards.db", nul
             do {
                 val id = cursor.getInt(0)
                 val cardName = cursor.getString(1)
-                val cardNumberLong = cursor.getLong(2).toString()
+                val cardNumberSure = cursor.getLong(2)
+                val cardNumberSize = cardNumberSure.toString().length
+                val cardNumberLong = if (cardNumberSize != 16) { //if card starts with some zeros, this needs to be handled.
+                    "0".repeat(16-cardNumberSize) + cardNumberSure.toString()
+                } else cardNumberSure.toString()
+
                 val cardNumber = "${cardNumberLong.substring(0,4)} ${cardNumberLong.substring(4,8)} " +
                         "${cardNumberLong.substring(8,12)} ${cardNumberLong.substring(12,16)}"
                 val cardShaba = cursor.getString(3)
@@ -114,7 +119,12 @@ class CardDatabase(context: Context):  SQLiteOpenHelper(context, "cards.db", nul
         val db = readableDatabase
         val cursor = db.rawQuery(query, null)
         cursor.moveToFirst()
-        val cardNumberLong = cursor.getLong(2).toString()
+        val cardNumberSure = cursor.getLong(2)
+        val cardNumberSize = cardNumberSure.toString().length
+        val cardNumberLong = if (cardNumberSize != 16) { //if card starts with some zeros, this needs to be handled.
+            "0".repeat(16-cardNumberSize) + cardNumberSure.toString()
+        } else cardNumberSure.toString()
+
         val cardNumber = "${cardNumberLong.substring(0,4)} ${cardNumberLong.substring(4,8)} " +
                 "${cardNumberLong.substring(8,12)} ${cardNumberLong.substring(12,16)}"
         val card = DebitCard(cursor.getString(1), cardNumber, cursor.getString(3),

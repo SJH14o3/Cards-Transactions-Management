@@ -646,7 +646,22 @@ class TransactionModifyActivity : AppCompatActivity() {
             view.text = ""
         } else {
             view.visibility = View.VISIBLE
-            view.text = "${Transaction.getSeparatedDigits(input.toLong())}T"
+            if (input == "-") { //this was to prevent a crash where remain input was negative
+                // and user would start deleting digits from right until they reach negative sign
+                view.text = ""
+                view.visibility = View.GONE
+            } else {
+                var long = input.toLong()
+                println("MYLOG: input = $input")
+                println("MYLOG: output = ${Transaction.getSeparatedDigits(input.toLong())}")
+
+                if (long < 0) { //there was an error where if number was negative, it wouldn't shown properly
+                    long *= -1
+                    view.text = "-${Transaction.getSeparatedDigits(long)}T"
+                } else {
+                    view.text = "${Transaction.getSeparatedDigits(input.toLong())}T"
+                }
+            }
         }
     }
     //during edit mode, all of the input components will automatically filled with the transaction to be edited

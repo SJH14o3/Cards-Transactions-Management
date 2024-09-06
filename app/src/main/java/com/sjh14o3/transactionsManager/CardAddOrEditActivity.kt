@@ -216,17 +216,17 @@ class CardAddOrEditActivity : AppCompatActivity() {
             textExpiry.setTextColor(resources.getColor(R.color.error))
             correctYear = false
             out = false
-        } else if (inputYear.length() != 4) {
-            if (!out) sb.append("\n")
-            sb.append("Fill year cell")
-            textExpiry.setText(R.string.error_year_not_filled)
-            textExpiry.setTextColor(resources.getColor(R.color.error))
-            correctYear = false
-            out = false
         } else if (!validateDigits(inputYear.text.toString(), 4)) {
             if (!out) sb.append("\n")
             sb.append("Insert only digits for year")
             textExpiry.setText(R.string.error_year_mismatch_number)
+            textExpiry.setTextColor(resources.getColor(R.color.error))
+            correctYear = false
+            out = false
+        }  else if (inputYear.text.toString().toInt() < 1000) {
+            if (!out) sb.append("\n")
+            sb.append("year cell must be larger than 1000")
+            textExpiry.setText(R.string.error_year_not_filled)
             textExpiry.setTextColor(resources.getColor(R.color.error))
             correctYear = false
             out = false

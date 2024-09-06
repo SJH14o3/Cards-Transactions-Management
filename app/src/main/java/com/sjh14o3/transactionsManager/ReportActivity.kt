@@ -79,7 +79,9 @@ class ReportActivity : AppCompatActivity() {
         if (transactions.isEmpty()) {
             this.income.text = "+0.0T"
             this.spent.text = "-0.0T"
-            listView.visibility = View.VISIBLE
+            this.balance.text = "0.0T"
+            balance.setTextColor(resources.getColor(R.color.disabled_background))
+            listView.visibility = View.GONE
             rangeHeadsUp.visibility = View.GONE
             return
         }

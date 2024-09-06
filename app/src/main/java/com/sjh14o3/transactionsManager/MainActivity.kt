@@ -6,6 +6,7 @@ import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity() , NavigationView.OnNavigationItemSelect
                 backPressed()
             }
         })
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         //setting every static variables in start of application
         parent= findViewById(R.id.main)
         coordinatorLayout = findViewById(R.id.coordinate_layout)
