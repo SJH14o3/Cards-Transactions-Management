@@ -67,7 +67,7 @@
     <EditText
         android:id="@+id/card_title_input"
         android:layout_width="match_parent"
-        android:maxLength="30"
+        android:maxLength="25"
         android:layout_height="48dp"
         android:layout_margin="5dp"
         android:gravity="center"
@@ -249,7 +249,7 @@
         android:id="@+id/card_owner_text"/>
     <EditText
         android:importantForAutofill="no"
-        android:maxLength="30"
+        android:maxLength="25"
         android:inputType="textCapWords|textPersonName"
         android:layout_width="match_parent"
         android:layout_height="48dp"

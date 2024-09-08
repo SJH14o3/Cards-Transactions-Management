@@ -29,7 +29,7 @@
     <string name="image_of_bank_logo">Image of Bank Log</string>
     <string name="more_options_for_card">more options for card</string>
     <string name="card_title">Card Title</string>
-    <string name="characters_limit">30 Characters Max</string>
+    <string name="characters_limit">25 Characters Max</string>
     <string name="card_number">Card Number</string>
     <string name="shaba_number">Shaba Number</string>
     <string name="ir">IR</string>

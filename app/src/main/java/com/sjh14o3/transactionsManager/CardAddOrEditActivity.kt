@@ -305,11 +305,11 @@ class CardAddOrEditActivity : AppCompatActivity() {
                 return
             }
             override fun afterTextChanged(s: Editable?) {
-                if (s?.length!! < 3) {
-                    //determining bank here
+                //determining bank here
+                if (inputCardNumber1.length() == 4) {
                     DebitCard.getBankLogo("${inputCardNumber1.text} ${inputCardNumber2.text}", logo)
                 }
-                else if (s.length == 4) {
+                if (s!!.length == 4) {
                     inputCardNumber3.requestFocus() // Switch focus to the next EditText
                 }
                 return

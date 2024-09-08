@@ -58,13 +58,22 @@
                 android:focusable="true"
                 app:srcCompat="@drawable/ic_add" />
 
-            <androidx.recyclerview.widget.RecyclerView
+            <!-- There is a weird bug with recycler view mismatching background, everything is fine
+             programmatically, i don't know I can only fix it with the inefficient nested scroll view-->
+            <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
-                android:layout_below="@+id/textView"
-                android:layout_marginTop="5dp"
-                android:id="@+id/mainRecyclerView"/>
+                android:layout_marginTop="10dp"
+                android:layout_below="@id/textView">
+                <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="10dp"
+                    android:overScrollMode="never"
+                    android:id="@+id/mainRecyclerView"/>
+            </androidx.core.widget.NestedScrollView>
+
+
 
 
 

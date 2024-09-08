@@ -24,12 +24,10 @@
         <activity
             android:name=".CardAddOrEditActivity"
             android:exported="false"
-            android:screenOrientation="sensorPortrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="sensorPortrait"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

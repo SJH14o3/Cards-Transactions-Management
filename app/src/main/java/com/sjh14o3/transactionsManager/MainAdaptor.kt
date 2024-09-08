@@ -20,6 +20,7 @@ import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
@@ -52,6 +53,7 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
         var parent: ConstraintLayout = itemView.findViewById(R.id.constraintLayoutCards)
         var more: ImageButton = itemView.findViewById(R.id.moreOperations)
         var logo: ImageView = itemView.findViewById(R.id.bank_logo)
+        val cardView: CardView = itemView.findViewById(R.id.bank_card_view)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -63,6 +65,12 @@ class MainAdaptor(cards: Array<DebitCard>, private val context: Context, private
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        //this lines will make sure card view ratio correspond to the ration of background images which is about 2.107
+        val screenWidth = context.resources.displayMetrics.widthPixels
+        val calculatedHeight = (screenWidth / 2.107).toInt()
+        val layoutParams = holder.cardView.layoutParams
+        layoutParams.height = calculatedHeight
+        holder.cardView.layoutParams = layoutParams
         //in real application, I will add a card at the end as a big button for adding a card
         //that's why things are assigning differently and no more functionality is needed
         if (position == cards.size-1) {
